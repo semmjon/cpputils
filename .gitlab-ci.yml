@@ -20,7 +20,6 @@ before_script:
   - python -m pip install pytest
   - python -m pip install auditwheel
   - python -m pip install twine
-  - cat $PYPIRC_CONF > ~/.pypirc
 
 test:
   when: manual
@@ -49,8 +48,8 @@ publish_38_manylinux1_x86_64:
   only:
   - tags
   script:
-    - auditwheel repair $(ls dist/*.whl)
-    - twine upload -r pypi $(ls wheelhouse/*.whl) --verbose
+    - python -m auditwheel repair $(ls dist/*.whl)
+    - python -m twine upload -r pypi $(ls wheelhouse/*.whl) --verbose
   needs:
     - job: build_38_manylinux1_x86_64
       artifacts: true
