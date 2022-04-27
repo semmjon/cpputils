@@ -1,0 +1,9 @@
+[submodule "lib/pybind11"]
+    path = lib/pybind11
+    url = https://github.com/pybind/pybind11.git
+[submodule "lib/hash-library"]
+    path = lib/hash-library
+    url = https://github.com/stbrumme/hash-library.git
+[submodule "lib/strtk"]
+    path = lib/strtk
+    url = https://github.com/ArashPartow/strtk.git

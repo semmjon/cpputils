@@ -1,0 +1,16 @@
+dist/
+*build*
+_generate/
+*.so
+*.py[cod]
+*.egg-info
+*env*
+scratch*
+.idea*
+ext/
+.Rproj.user
+*.Rproj
+.Rhistory
+*.log*
+logging.yaml
+*.eggs
