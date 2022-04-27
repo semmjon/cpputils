@@ -5,8 +5,6 @@ stages:
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
-  TWINE_USERNAME: $TWINE_USERNAME
-  TWINE_PASSWORD: $TWINE_PASSWORD
 
 before_script:
   - ldd --version ldd  # For debugging
