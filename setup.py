@@ -121,7 +121,7 @@ setup(
     license="",
     author="sgeist",
     author_email="semjon.geist@ionos.com",
-    description="Data Factory Package for Data Lake job automation",
+    description="CPP-Utils Python Package for string and file operations",
     long_description=long_description,
     long_description_content_type="text/markdown",
     ext_modules=[CMakeExtension("cpputils")],
