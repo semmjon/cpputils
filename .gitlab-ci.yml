@@ -20,6 +20,7 @@ before_script:
   - python -m pip install pytest
   - python -m pip install auditwheel
   - python -m pip install twine
+  - cat $PYPIRC > /root/.pypirc
 
 test:
   when: manual
