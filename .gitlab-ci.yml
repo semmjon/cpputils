@@ -34,8 +34,8 @@ build_38_manylinux1_x86_64:
   image: quay.io/pypa/manylinux2014_x86_64:latest
   # when: manual
   stage: build
-  only:
-    - tags
+  #only:
+  #  - tags
   script:
     - python -m build
   artifacts:
@@ -46,8 +46,8 @@ publish_38_manylinux1_x86_64:
   image: quay.io/pypa/manylinux2014_x86_64:latest
   # when: manual
   stage: publish
-  only:
-  - tags
+  #only:
+  #- tags
   script:
     - python -m auditwheel repair $(ls dist/*.whl)
     - python -m twine upload -r pypi $(ls wheelhouse/*.whl) --verbose
