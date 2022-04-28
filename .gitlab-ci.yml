@@ -25,7 +25,8 @@ before_script:
 test:
   when: manual
   script:
-    - pip install .
+    - python -m build 
+    - pip install $(ls dist/*.whl)
     - python -m pytest
 
 build_38_manylinux1_x86_64:
