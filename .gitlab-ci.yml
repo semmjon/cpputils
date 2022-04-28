@@ -70,5 +70,5 @@ push_to_github:
     - git add .
     - git commit -m "$CI_COMMIT_MESSAGE" || echo "nothing to commit!"
     - git push origin HEAD:$CI_COMMIT_REF_NAME -f
-  #needs:
-  #  - job: test_38_manylinux1_x86_64
+  needs:
+    - job: test_38_manylinux1_x86_64
