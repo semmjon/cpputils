@@ -1,6 +1,6 @@
 stages:
-  - test
   - build
+  - test
   - publish
 
 variables:
@@ -26,8 +26,6 @@ build_38_manylinux1_x86_64:
   image: quay.io/pypa/manylinux2014_x86_64:latest
   # when: manual
   stage: build
-  only:
-    - tags
   script:
     - python -m build
   artifacts:
