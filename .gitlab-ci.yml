@@ -59,6 +59,7 @@ push_to_github:
   image: alpine:latest
   stage: publish
   before_script:
+    - apt update && apt install git
     - git config --global user.email $GITHUB_EMAIL
     - git config --global user.name $GITHUB_USERNAME
   script:
