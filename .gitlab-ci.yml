@@ -53,6 +53,8 @@ publish_38_manylinux1_x86_64:
     - python -m auditwheel repair $(ls dist/*.whl)
     - python -m twine upload -r pypi $(ls wheelhouse/*.whl) --verbose
   needs:
+    - job: build_38_manylinux1_x86_64
+      artifacts: true
     - job: test_38_manylinux1_x86_64
 
 push_to_github:
@@ -71,4 +73,6 @@ push_to_github:
     - git commit -m "$CI_COMMIT_MESSAGE" || echo "nothing to commit!"
     - git push origin HEAD:$CI_COMMIT_REF_NAME -f
   needs:
+    - job: build_38_manylinux1_x86_64
+      artifacts: true
     - job: test_38_manylinux1_x86_64
