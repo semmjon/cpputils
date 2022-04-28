@@ -24,7 +24,7 @@ before_script:
 
 build_38_manylinux1_x86_64:
   image: quay.io/pypa/manylinux2014_x86_64:latest
-  # when: manual
+  when: manual
   stage: build
   script:
     - python -m build
@@ -34,7 +34,7 @@ build_38_manylinux1_x86_64:
 
 test_38_manylinux1_x86_64:
   image: quay.io/pypa/manylinux2014_x86_64:latest
-  #when: manual
+  when: manual
   stage: test
   script:
     - pip install $(ls dist/*.whl)
@@ -58,14 +58,14 @@ publish_38_manylinux1_x86_64:
 push_to_github:
   image: alpine/git
   stage: publish
+  when: manual
   before_script:
     - git config --global user.email $GITHUB_EMAIL
     - git config --global user.name $GITHUB_USERNAME
   script:
-    - cd $CI_PROJECT_PATH
     - git remote set-url origin https://$GITHUB_USERNAME:$GITHUB_TOKEN@github.com/semmjon/cpputils.git
     - git add .
     - git commit -m $CI_COMMIT_MESSAGE
     - git push origin HEAD:$CI_COMMIT_REF_NAME -f
-  needs:
-    - job: test_38_manylinux1_x86_64
+  #needs:
+  #  - job: test_38_manylinux1_x86_64
