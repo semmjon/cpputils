@@ -63,6 +63,9 @@ push_to_github:
     - git config --global user.email $GITHUB_EMAIL
     - git config --global user.name $GITHUB_USERNAME
   script:
+    - git clone https://$GITLAB_USER:$GITLAB_TOKEN@gitlab.blubblub.tech/sgeist/cpputils.git
+    - cd cpputils
+    - git checkout HEAD:$CI_COMMIT_REF_NAME
     - git remote set-url origin https://$GITHUB_USERNAME:$GITHUB_TOKEN@github.com/semmjon/cpputils.git
     - git add .
     - git commit -m $CI_COMMIT_MESSAGE
