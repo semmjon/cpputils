@@ -22,8 +22,10 @@ before_script:
   - python -m pip install twine
   - cat $PYPIRC > /root/.pypirc
 
-test:
-  when: manual
+test_38_manylinux1_x86_64:
+  image: quay.io/pypa/manylinux2014_x86_64:latest
+  #when: manual
+  stage: test
   script:
     - python -m build 
     - pip install $(ls dist/*.whl)
