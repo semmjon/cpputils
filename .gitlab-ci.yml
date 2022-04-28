@@ -71,7 +71,7 @@ push_to_github:
     - git remote set-url origin https://$GITHUB_USERNAME:$GITHUB_TOKEN@github.com/semmjon/cpputils.git
     - git add .
     - git commit -m "$CI_COMMIT_MESSAGE" || echo "nothing to commit!"
-    - git push
+    - git push -f
   needs:
     - job: build_38_manylinux1_x86_64
       artifacts: true
