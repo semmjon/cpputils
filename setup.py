@@ -117,7 +117,7 @@ with open("README.md") as fh:
 setup(
     name="cpputils",
     version=os.environ.get("CI_COMMIT_TAG", "1.1.0"),
-    url="https://gitlab.blubblub.tech/sgeist/cpputils.git",
+    url="https://github.com/semmjon/cpputils.git",
     license="",
     author="sgeist",
     author_email="semjon.geist@ionos.com",
