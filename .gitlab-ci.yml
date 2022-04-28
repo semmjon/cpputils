@@ -43,7 +43,7 @@ build_38_manylinux1_x86_64:
     paths:
       - dist/*.whl
   needs:
-    - job: test
+    - job: test_38_manylinux1_x86_64
 
 publish_38_manylinux1_x86_64:
   image: quay.io/pypa/manylinux2014_x86_64:latest
