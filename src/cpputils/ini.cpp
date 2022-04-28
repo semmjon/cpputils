@@ -129,6 +129,13 @@ namespace ini{
 
                     if (start_iter == end_iter) {
                         char* env_value = std::getenv(item_value.c_str());
+                        if(env_value==nullptr){
+                            std::string upper_env = item_value;
+                            std::transform(upper_env.begin(),
+                                           upper_env.end(), upper_env.begin(),
+                                           ::toupper);
+                            env_value = std::getenv(upper_env.c_str());
+                        }
                         if(env_value!=nullptr){
                             t_SectionData.section_envir[py::cast(item.first)] = string_operations::eval_type(env_value);
                             break;

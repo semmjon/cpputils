@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 
 
 def _check_milliseconds_field(millisecond):
@@ -7,29 +7,29 @@ def _check_milliseconds_field(millisecond):
 
 
 class datetime_ms(datetime):
-    @classmethod
     def __new__(
         cls,
-        year: int,
-        month: int = None,
-        day: int = None,
-        hour: int = 0,
-        minute: int = 0,
-        second: int = 0,
-        millisecond: int = 0,
-        tzinfo: timedelta = None,
+        year,
+        month=None,
+        day=None,
+        hour=0,
+        minute=0,
+        second=0,
+        millisecond=0,
+        tzinfo=None,
         *,
         fold=0
     ):
         _check_milliseconds_field(millisecond)
-        return datetime.__new__(
+        self = datetime.__new__(
             cls, year, month, day, hour, minute, second, millisecond * 1000, tzinfo
         )
+        return self
 
     @property
     def millisecond(self):
         return int(self.microsecond / 1000)
 
     def __str__(self):
-        """Convert to string, for str()."""
+        "Convert to string, for str()."
         return self.isoformat(sep=" ")[:-3]

@@ -159,6 +159,7 @@ namespace string_operations {
 
     py::object datetime = py::module::import("datetime").attr("datetime");
     py::object timedelta = py::module::import("datetime").attr("timedelta");
+    py::object timezone = py::module::import("datetime").attr("timezone");
     py::object datetime_ms = py::module::import("cpputils._types").attr("datetime_ms");
     py::object uuid = py::module::import("uuid").attr("UUID");
     py::object to_integer = py::module::import("builtins").attr("int");
@@ -174,7 +175,7 @@ namespace string_operations {
                        global_dt.minute      ,
                        global_dt.second      ,
                        global_dt.millisecond,
-                       timedelta(0, global_dt.tzd*60)) :
+                       timezone(timedelta(0, global_dt.tzd*60))) :
                datetime(
                        global_dt.year        ,
                        global_dt.month       ,
@@ -183,7 +184,7 @@ namespace string_operations {
                        global_dt.minute      ,
                        global_dt.second      ,
                        global_dt.microsecond,
-                       timedelta(0, global_dt.tzd*60));
+                       timezone(timedelta(0, global_dt.tzd*60)));
     }
     py::object get_global_date(){
         return  datetime.attr("date")(
@@ -198,7 +199,7 @@ namespace string_operations {
                 global_dt.minute      ,
                 global_dt.second      ,
                 global_dt.millisecond ? global_dt.millisecond*1000 : global_dt.microsecond ,
-                datetime.attr("timezone")(datetime.attr("timedelta")(0, global_dt.tzd*60))
+                timezone(timedelta(0, global_dt.tzd*60))
         );
     }
 
