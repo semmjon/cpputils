@@ -1,5 +1,6 @@
 CPP-Utils Python Package
 ===========
+[![cpputils](https://gitlab.blubblub.tech/sgeist/cpputils/badges/main/pipeline.svg)](https://gitlab.blubblub.tech/sgeist/cpputils.git)
 
 ## Information
 
