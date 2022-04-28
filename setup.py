@@ -113,7 +113,7 @@ with open("README.md") as fh:
     long_description = fh.read()
 
 # The information here can also be placed in setup.cfg - better separation of
-# logic and declaration, and simpler if you include description/version in a file.
+# logic and declaration, and simpler if you lib description/version in a file.
 setup(
     name="cpputils",
     version=os.environ.get("CI_COMMIT_TAG", "1.1.0"),

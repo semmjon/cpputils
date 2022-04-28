@@ -15,8 +15,7 @@ PYBIND11_MODULE(_cpputils, module) {
             simple_hmac
             sha256
     )pbdoc";
-//    py::module ini = module.def_submodule("ini");
-//    ini.attr("__name__") = "dfpy.utils.cpputils.ini";
+
     module.def("ini_load", [](const py::object& files,
                            const py::object& sections,
                            const py::object& keys,

@@ -6,7 +6,7 @@ def _check_milliseconds_field(millisecond):
         raise ValueError("microsecond must be in 0..999", millisecond)
 
 
-class DatetimeMS(datetime):
+class datetime_ms(datetime):
     @classmethod
     def __new__(
         cls,

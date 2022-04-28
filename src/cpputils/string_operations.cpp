@@ -159,7 +159,7 @@ namespace string_operations {
 
     py::object datetime = py::module::import("datetime").attr("datetime");
     py::object timedelta = py::module::import("datetime").attr("timedelta");
-    py::object datetime_ms = py::module::import("cpputils").attr("datetime_ms");
+    py::object datetime_ms = py::module::import("cpputils._types").attr("datetime_ms");
     py::object uuid = py::module::import("uuid").attr("UUID");
     py::object to_integer = py::module::import("builtins").attr("int");
     py::object decimal = py::module::import("decimal").attr("Decimal");
