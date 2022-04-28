@@ -22,15 +22,6 @@ before_script:
   - python -m pip install twine
   - cat $PYPIRC > /root/.pypirc
 
-test_38_manylinux1_x86_64:
-  image: quay.io/pypa/manylinux2014_x86_64:latest
-  #when: manual
-  stage: test
-  script:
-    - python -m build 
-    - pip install $(ls dist/*.whl)
-    - python -m pytest
-
 build_38_manylinux1_x86_64:
   image: quay.io/pypa/manylinux2014_x86_64:latest
   # when: manual
@@ -42,8 +33,17 @@ build_38_manylinux1_x86_64:
   artifacts:
     paths:
       - dist/*.whl
+
+test_38_manylinux1_x86_64:
+  image: quay.io/pypa/manylinux2014_x86_64:latest
+  #when: manual
+  stage: test
+  script:
+    - pip install $(ls dist/*.whl)
+    - python -m pytest
   needs:
-    - job: test_38_manylinux1_x86_64
+    - job: build_38_manylinux1_x86_64
+      artifacts: true
 
 publish_38_manylinux1_x86_64:
   image: quay.io/pypa/manylinux2014_x86_64:latest
@@ -55,5 +55,4 @@ publish_38_manylinux1_x86_64:
     - python -m auditwheel repair $(ls dist/*.whl)
     - python -m twine upload -r pypi $(ls wheelhouse/*.whl) --verbose
   needs:
-    - job: build_38_manylinux1_x86_64
-      artifacts: true
+    - job: test_38_manylinux1_x86_64
