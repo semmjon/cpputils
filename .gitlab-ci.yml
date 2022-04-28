@@ -27,8 +27,6 @@ test:
   script:
     - pip install .
     - python -m pytest
-    - python setup.py build
-    - python -m build
 
 build_38_manylinux1_x86_64:
   image: quay.io/pypa/manylinux2014_x86_64:latest
@@ -41,6 +39,8 @@ build_38_manylinux1_x86_64:
   artifacts:
     paths:
       - dist/*.whl
+  needs:
+    - job: test
 
 publish_38_manylinux1_x86_64:
   image: quay.io/pypa/manylinux2014_x86_64:latest
