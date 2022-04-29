@@ -64,8 +64,10 @@ publish_manylinux1_x86_64:
     - tags
   script:
     - source venv310/bin/activate
-    - python -m auditwheel repair $(ls dist/*.whl)
-    - python -m twine upload -r pypi $(ls wheelhouse/*.whl) --verbose
+    - python -m auditwheel repair $(ls dist/*38*.whl)
+    - python -m auditwheel repair $(ls dist/*310*.whl)
+    - python -m twine upload -r pypi $(ls wheelhouse/*38*.whl) --verbose
+    - python -m twine upload -r pypi $(ls wheelhouse/*310*.whl) --verbose
   needs:
     - job: build_manylinux1_x86_64
       artifacts: true
