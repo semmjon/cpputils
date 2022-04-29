@@ -15,7 +15,7 @@ class TestEvalType(unittest.TestCase):
     def test_float(self):
         [
             self.assertEqual(eval_type(str(x)), x)
-            for x in [0.1, 1.0, 0.0, -0.1, 0.00000000000000000001]
+            for x in [0.1, 1.0, 0.0, -0.1, 0.00000000000000000012312301]
         ]
 
     def test_timestamp_formats(self):

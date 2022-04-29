@@ -1,36 +1,8 @@
 #include "string_operations.h"
-#include "strtk/strtk.hpp"
+#define strtk_no_tr1_or_boost
 #include "datetime_utils.h"
 
 namespace string_operations {
-
-// String int64 converter
-    uint64_t parse64(const char *s) {
-        uint64_t i;
-        char c ;
-        int scanned = sscanf(s, "%" SCNx64 "%c", &i, &c);
-        if (scanned == 1) return i;
-        if (scanned > 1) {
-            // TBD about extra data found
-            return i;
-        }
-        // TBD failed to scan;
-        return 0;
-    }
-
-    std::string path_exanduser(std::string value){
-        if(value.at(0) == '.' && value.at(1) == '/'){
-            value.erase(0,2);
-        }
-        if(value.at(0) == '~'){
-            char* home = std::getenv("HOME");
-            if(home!=NULL){
-                value.erase(0,1);
-                value.insert(0, std::string(home) + "/");
-            }
-        }
-        return value;
-    }
 
     template<class T_0, class T_1>
     static bool compare_type() {
@@ -38,12 +10,11 @@ namespace string_operations {
     }
 
     template<class T_in, class T_out>
-    map<std::string, std::vector<T_out>> convert_to_map(const py::object& dictionary)
+    std::map<std::string, std::vector<T_out>> convert_to_map(const py::object& dictionary)
     {
-        map<std::string, std::vector<T_out> > result;
+        std::map<std::string, std::vector<T_out> > result;
 
         if(dictionary.is_none()){
-            std::cout << "dict is empty" << std::endl;
             return result;
         }
         if(py::isinstance<py::dict>(dictionary)){
@@ -88,12 +59,80 @@ namespace string_operations {
         return result;
     }
 
-    map<std::string, std::vector<std::string>> convert_to_map_str(const py::object& dictionary) {
+    std::map<std::string, std::vector<std::string>> convert_to_map_str(const py::object& dictionary) {
         return convert_to_map<py::str, std::string>(dictionary);
     }
 
-    map<std::string, std::vector<py::object>> convert_to_map_py(const py::object& dictionary) {
+    std::map<std::string, std::vector<py::object>> convert_to_map_py(const py::object& dictionary) {
         return convert_to_map<py::object, py::object>(dictionary);
+    }
+
+    bool is_nan(std::string value){
+        std::transform(value.begin(), value.end(), value.begin(), ::toupper);
+        return std::find(NAN_STRINGS.begin(), NAN_STRINGS.end(), value) != NAN_STRINGS.end();
+    }
+
+    // get section index function
+    std::array<int, 2> idx_between(
+            std::string::const_iterator start_iter,
+            std::string::const_iterator end_iter,
+            const std::string& begin_pattern,
+            const std::string& end_pattern,
+            int skip = 0) {
+
+        std::string::const_iterator skipped_iter = start_iter;
+        std::advance(skipped_iter, skip);
+        std::array<int, 2> idx{};
+
+        // begin section index
+        auto section_start_iter = std::search(skipped_iter, end_iter,
+                // std::boyer_moore_horspool_searcher(
+                                              begin_pattern.begin(), begin_pattern.end()
+                //)
+        );
+
+        idx[0] = section_start_iter - start_iter;
+        if(idx[0] < 0) return(empty_idx);
+
+        // end section index;
+        idx[1] = std::search(section_start_iter, end_iter,
+                // std::boyer_moore_horspool_searcher(
+                             end_pattern.begin(), end_pattern.end()
+                //)
+        ) - start_iter;
+
+        if(idx[0] >= idx[1]) return(empty_idx);
+
+        idx[1] += end_pattern.size();
+
+        return (idx);
+    }
+
+    std::string trim(const std::string& str,
+                     const std::string& whitespace)
+    {
+        const auto strBegin = str.find_first_not_of(whitespace);
+        if (strBegin == std::string::npos)
+            return ""; // no content
+
+        const auto strEnd = str.find_last_not_of(whitespace);
+        const auto strRange = strEnd - strBegin + 1;
+
+        return str.substr(strBegin, strRange);
+    }
+
+    // String int64 converter
+    uint64_t parse64(const char *s) {
+        uint64_t i;
+        char c ;
+        int scanned = sscanf(s, "%" SCNx64 "%c", &i, &c);
+        if (scanned == 1) return i;
+        if (scanned > 1) {
+            // TBD about extra data found
+            return i;
+        }
+        // TBD failed to scan;
+        return 0;
     }
 
     dt_utils::datetime global_dt{};
@@ -158,262 +197,214 @@ namespace string_operations {
     dt_utils::time_format8 time_format8(global_dt);
 
     py::object datetime = py::module::import("datetime").attr("datetime");
+    py::object date = py::module::import("datetime").attr("date");
+    py::object time = py::module::import("datetime").attr("time");
     py::object timedelta = py::module::import("datetime").attr("timedelta");
     py::object timezone = py::module::import("datetime").attr("timezone");
     py::object datetime_ms = py::module::import("cpputils._types").attr("datetime_ms");
-    py::object uuid = py::module::import("uuid").attr("UUID");
-    py::object to_integer = py::module::import("builtins").attr("int");
-    py::object decimal = py::module::import("decimal").attr("Decimal");
 
-    py::object get_global_datetime(){
+    py::object get_global_datetime() {
         return global_dt.millisecond ?
                datetime_ms(
-                       global_dt.year        ,
-                       global_dt.month       ,
-                       global_dt.day         ,
-                       global_dt.hour        ,
-                       global_dt.minute      ,
-                       global_dt.second      ,
+                       global_dt.year,
+                       global_dt.month,
+                       global_dt.day,
+                       global_dt.hour,
+                       global_dt.minute,
+                       global_dt.second,
                        global_dt.millisecond,
-                       timezone(timedelta(0, global_dt.tzd*60))) :
+                       timezone(timedelta(0, global_dt.tzd * 60))) :
                datetime(
-                       global_dt.year        ,
-                       global_dt.month       ,
-                       global_dt.day         ,
-                       global_dt.hour        ,
-                       global_dt.minute      ,
-                       global_dt.second      ,
+                       global_dt.year,
+                       global_dt.month,
+                       global_dt.day,
+                       global_dt.hour,
+                       global_dt.minute,
+                       global_dt.second,
                        global_dt.microsecond,
-                       timezone(timedelta(0, global_dt.tzd*60)));
+                       timezone(timedelta(0, global_dt.tzd * 60)));
     }
-    py::object get_global_date(){
-        return  datetime.attr("date")(
-                global_dt.year        ,
-                global_dt.month       ,
+
+    py::object get_global_date() {
+        return date(
+                global_dt.year,
+                global_dt.month,
                 global_dt.day
         );
     }
-    py::object get_global_time(){
-        return  datetime.attr("time")(
-                global_dt.hour        ,
-                global_dt.minute      ,
-                global_dt.second      ,
-                global_dt.millisecond ? global_dt.millisecond*1000 : global_dt.microsecond ,
-                timezone(timedelta(0, global_dt.tzd*60))
+
+    py::object get_global_time() {
+        return time(
+                global_dt.hour,
+                global_dt.minute,
+                global_dt.second,
+                global_dt.millisecond ? global_dt.millisecond * 1000 : global_dt.microsecond,
+                timezone(timedelta(0, global_dt.tzd * 60))
         );
     }
 
-    py::object eval_datetime(const std::string& value){
+    py::object to_datetime(const std::string &value) {
         global_dt.clear();
-        if(strtk::string_to_type_converter(value, datetime_format00)) return get_global_datetime();
-        if(strtk::string_to_type_converter(value, datetime_format01)) return get_global_datetime();
-        if(strtk::string_to_type_converter(value, datetime_format02)) return get_global_datetime();
-        if(strtk::string_to_type_converter(value, datetime_format03)) return get_global_datetime();
-        if(strtk::string_to_type_converter(value, datetime_format04)) return get_global_datetime();
-        if(strtk::string_to_type_converter(value, datetime_format05)) return get_global_datetime();
-        if(strtk::string_to_type_converter(value, datetime_format06)) return get_global_datetime();
-        if(strtk::string_to_type_converter(value, datetime_format07)) return get_global_datetime();
-        if(strtk::string_to_type_converter(value, datetime_format08)) return get_global_datetime();
-        if(strtk::string_to_type_converter(value, datetime_format09)) return get_global_datetime();
-        if(strtk::string_to_type_converter(value, datetime_format10)) return get_global_datetime();
-        if(strtk::string_to_type_converter(value, datetime_format11)) return get_global_datetime();
-        if(strtk::string_to_type_converter(value, datetime_format12)) return get_global_datetime();
-        if(strtk::string_to_type_converter(value, datetime_format13)) return get_global_datetime();
-        if(strtk::string_to_type_converter(value, datetime_format14)) return get_global_datetime();
-        if(strtk::string_to_type_converter(value, datetime_format15)) return get_global_datetime();
-        if(strtk::string_to_type_converter(value, datetime_format16)) return get_global_datetime();
-        if(strtk::string_to_type_converter(value, datetime_format17)) return get_global_datetime();
-        if(strtk::string_to_type_converter(value, datetime_format18)) return get_global_datetime();
-        if(strtk::string_to_type_converter(value, datetime_format19)) return get_global_datetime();
-        if(strtk::string_to_type_converter(value, datetime_format20)) return get_global_datetime();
-        if(strtk::string_to_type_converter(value, datetime_format21)) return get_global_datetime();
-        if(strtk::string_to_type_converter(value, datetime_format22)) return get_global_datetime();
-        if(strtk::string_to_type_converter(value, datetime_format23)) return get_global_datetime();
-        if(strtk::string_to_type_converter(value, datetime_format24)) return get_global_datetime();
-        if(strtk::string_to_type_converter(value, datetime_format25)) return get_global_datetime();
-        if(strtk::string_to_type_converter(value, datetime_format26)) return get_global_datetime();
-        if(strtk::string_to_type_converter(value, datetime_format27)) return get_global_datetime();
-        if(strtk::string_to_type_converter(value, datetime_format28)) return get_global_datetime();
-        if(strtk::string_to_type_converter(value, datetime_format29)) return get_global_datetime();
-        if(strtk::string_to_type_converter(value, datetime_format30)) return get_global_datetime();
-        if(strtk::string_to_type_converter(value, datetime_format31)) return get_global_datetime();
-        if(strtk::string_to_type_converter(value, datetime_format32)) return get_global_datetime();
-        if(strtk::string_to_type_converter(value, datetime_format33)) return get_global_datetime();
-        if(strtk::string_to_type_converter(value, date_format00)) return get_global_date();
-        if(strtk::string_to_type_converter(value, date_format01)) return get_global_date();
-        if(strtk::string_to_type_converter(value, date_format02)) return get_global_date();
-        if(strtk::string_to_type_converter(value, date_format03)) return get_global_date();
-        if(strtk::string_to_type_converter(value, date_format04)) return get_global_date();
-        if(strtk::string_to_type_converter(value, date_format05)) return get_global_date();
-        if(strtk::string_to_type_converter(value, date_format06)) return get_global_date();
-        if(strtk::string_to_type_converter(value, date_format07)) return get_global_date();
-        if(strtk::string_to_type_converter(value, date_format08)) return get_global_date();
-        if(strtk::string_to_type_converter(value, date_format09)) return get_global_date();
-        if(strtk::string_to_type_converter(value, date_format10)) return get_global_date();
-        if(strtk::string_to_type_converter(value, date_format11)) return get_global_date();
-        if(strtk::string_to_type_converter(value, date_format12)) return get_global_date();
-        if(strtk::string_to_type_converter(value, date_format13)) return get_global_date();
-        if(strtk::string_to_type_converter(value, date_format14)) return get_global_date();
-        if(strtk::string_to_type_converter(value, date_format15)) return get_global_date();
-        if(strtk::string_to_type_converter(value, time_format0)) return get_global_time();
-        if(strtk::string_to_type_converter(value, time_format1)) return get_global_time();
-        if(strtk::string_to_type_converter(value, time_format2)) return get_global_time();
-        if(strtk::string_to_type_converter(value, time_format3)) return get_global_time();
-        if(strtk::string_to_type_converter(value, time_format4)) return get_global_time();
-        if(strtk::string_to_type_converter(value, time_format5)) return get_global_time();
-        if(strtk::string_to_type_converter(value, time_format6)) return get_global_time();
-        if(strtk::string_to_type_converter(value, time_format7)) return get_global_time();
-        if(strtk::string_to_type_converter(value, time_format8)) return get_global_time();
+        if (strtk::string_to_type_converter(value, datetime_format00)) return get_global_datetime();
+        if (strtk::string_to_type_converter(value, datetime_format01)) return get_global_datetime();
+        if (strtk::string_to_type_converter(value, datetime_format02)) return get_global_datetime();
+        if (strtk::string_to_type_converter(value, datetime_format03)) return get_global_datetime();
+        if (strtk::string_to_type_converter(value, datetime_format04)) return get_global_datetime();
+        if (strtk::string_to_type_converter(value, datetime_format05)) return get_global_datetime();
+        if (strtk::string_to_type_converter(value, datetime_format06)) return get_global_datetime();
+        if (strtk::string_to_type_converter(value, datetime_format07)) return get_global_datetime();
+        if (strtk::string_to_type_converter(value, datetime_format08)) return get_global_datetime();
+        if (strtk::string_to_type_converter(value, datetime_format09)) return get_global_datetime();
+        if (strtk::string_to_type_converter(value, datetime_format10)) return get_global_datetime();
+        if (strtk::string_to_type_converter(value, datetime_format11)) return get_global_datetime();
+        if (strtk::string_to_type_converter(value, datetime_format12)) return get_global_datetime();
+        if (strtk::string_to_type_converter(value, datetime_format13)) return get_global_datetime();
+        if (strtk::string_to_type_converter(value, datetime_format14)) return get_global_datetime();
+        if (strtk::string_to_type_converter(value, datetime_format15)) return get_global_datetime();
+        if (strtk::string_to_type_converter(value, datetime_format16)) return get_global_datetime();
+        if (strtk::string_to_type_converter(value, datetime_format17)) return get_global_datetime();
+        if (strtk::string_to_type_converter(value, datetime_format18)) return get_global_datetime();
+        if (strtk::string_to_type_converter(value, datetime_format19)) return get_global_datetime();
+        if (strtk::string_to_type_converter(value, datetime_format20)) return get_global_datetime();
+        if (strtk::string_to_type_converter(value, datetime_format21)) return get_global_datetime();
+        if (strtk::string_to_type_converter(value, datetime_format22)) return get_global_datetime();
+        if (strtk::string_to_type_converter(value, datetime_format23)) return get_global_datetime();
+        if (strtk::string_to_type_converter(value, datetime_format24)) return get_global_datetime();
+        if (strtk::string_to_type_converter(value, datetime_format25)) return get_global_datetime();
+        if (strtk::string_to_type_converter(value, datetime_format26)) return get_global_datetime();
+        if (strtk::string_to_type_converter(value, datetime_format27)) return get_global_datetime();
+        if (strtk::string_to_type_converter(value, datetime_format28)) return get_global_datetime();
+        if (strtk::string_to_type_converter(value, datetime_format29)) return get_global_datetime();
+        if (strtk::string_to_type_converter(value, datetime_format30)) return get_global_datetime();
+        if (strtk::string_to_type_converter(value, datetime_format31)) return get_global_datetime();
+        if (strtk::string_to_type_converter(value, datetime_format32)) return get_global_datetime();
+        if (strtk::string_to_type_converter(value, datetime_format33)) return get_global_datetime();
+        if (strtk::string_to_type_converter(value, date_format00)) return get_global_date();
+        if (strtk::string_to_type_converter(value, date_format01)) return get_global_date();
+        if (strtk::string_to_type_converter(value, date_format02)) return get_global_date();
+        if (strtk::string_to_type_converter(value, date_format03)) return get_global_date();
+        if (strtk::string_to_type_converter(value, date_format04)) return get_global_date();
+        if (strtk::string_to_type_converter(value, date_format05)) return get_global_date();
+        if (strtk::string_to_type_converter(value, date_format06)) return get_global_date();
+        if (strtk::string_to_type_converter(value, date_format07)) return get_global_date();
+        if (strtk::string_to_type_converter(value, date_format08)) return get_global_date();
+        if (strtk::string_to_type_converter(value, date_format09)) return get_global_date();
+        if (strtk::string_to_type_converter(value, date_format10)) return get_global_date();
+        if (strtk::string_to_type_converter(value, date_format11)) return get_global_date();
+        if (strtk::string_to_type_converter(value, date_format12)) return get_global_date();
+        if (strtk::string_to_type_converter(value, date_format13)) return get_global_date();
+        if (strtk::string_to_type_converter(value, date_format14)) return get_global_date();
+        if (strtk::string_to_type_converter(value, date_format15)) return get_global_date();
+        if (strtk::string_to_type_converter(value, time_format0)) return get_global_time();
+        if (strtk::string_to_type_converter(value, time_format1)) return get_global_time();
+        if (strtk::string_to_type_converter(value, time_format2)) return get_global_time();
+        if (strtk::string_to_type_converter(value, time_format3)) return get_global_time();
+        if (strtk::string_to_type_converter(value, time_format4)) return get_global_time();
+        if (strtk::string_to_type_converter(value, time_format5)) return get_global_time();
+        if (strtk::string_to_type_converter(value, time_format6)) return get_global_time();
+        if (strtk::string_to_type_converter(value, time_format7)) return get_global_time();
+        if (strtk::string_to_type_converter(value, time_format8)) return get_global_time();
 
         return py::cast(value);
+    };
 
-    }
+    py::object uuid = py::module::import("uuid").attr("UUID");
+    py::object to_integer = py::module::import("builtins").attr("int");
+    py::object decimal = py::module::import("decimal").attr("Decimal");
+    py::object eval_type(std::string value) {
 
-    bool is_nan(std::string value){
-        std::transform(value.begin(), value.end(), value.begin(), ::toupper);
-        return std::find(NAN_STRINGS.begin(), NAN_STRINGS.end(), value) != NAN_STRINGS.end();
-    }
-
-    py::object eval_type(std::string value){
-
-        if(value.empty()){
+        if (value.empty()) {
             return py::none();
         }
 
         int char_size = (int) value.size();
         char first_char = value[0];
 
-        if (char_size <= 1){
-            if(std::isdigit(first_char))
-                return(py::cast(std::stoi(&first_char)));
-            return(py::cast(first_char));
+        if (char_size <= 1) {
+            if (std::isdigit(first_char))
+                return (py::cast(std::stoi(&first_char)));
+            return (py::cast(first_char));
         }
 
         // parse numeric
-        if(std::regex_match(value, numeric_regex)){
+        if (std::regex_match(value, numeric_regex)) {
 
-            if(value.find_first_of('.') != std::string::npos || value.back() == '.'){
+            if (value.find_first_of('.') != std::string::npos || value.back() == '.') {
 
-                if(char_size > 18){
-                    return(decimal(value));
+                if (char_size > 18) {
+                    return (decimal(value));
                 }
 
                 // parse double
-                return(py::cast(std::stod(value)));
+                return (py::cast(std::stod(value)));
 
             }
 
             // parse numeric
-            if(first_char == MINUS_CHAR){
-                value = value.erase(0,1);
+            if (first_char == MINUS_CHAR) {
+                value = value.erase(0, 1);
                 uint64_t integer = parse64(value.c_str());
-                if(integer < UINT_MAX){
-                    return(py::cast(-integer));
+                if (integer < UINT_MAX) {
+                    return (py::cast(-integer));
                 }
-                return(-to_integer(value));
+                return (-to_integer(value));
             }
 
             uint64_t integer = parse64(value.c_str());
-            if(integer < UINT_MAX){
-                return(py::cast(integer));
+            if (integer < UINT_MAX) {
+                return (py::cast(integer));
             }
-            return(to_integer(value));
+            return (to_integer(value));
 
         }
 
         const char last_char = value.back();
 
         // remove quote
-        if((first_char == QUOTE_CHAR1 && last_char == QUOTE_CHAR1) ||
-           (first_char == QUOTE_CHAR2 && last_char == QUOTE_CHAR2)){
-            value = value.erase(0,1).erase(value.size()-1);
+        if ((first_char == QUOTE_CHAR1 && last_char == QUOTE_CHAR1) ||
+            (first_char == QUOTE_CHAR2 && last_char == QUOTE_CHAR2)) {
+            value = value.erase(0, 1).erase(value.size() - 1);
         }
 
         char_size = (int) value.size();
         first_char = value[0];
 
-        if(char_size == 1){
+        if (char_size == 1) {
 
-            if(std::isdigit(first_char))
-                return(py::cast(std::stoi(&first_char)));
-            return(py::cast(first_char));
+            if (std::isdigit(first_char))
+                return (py::cast(std::stoi(&first_char)));
+            return (py::cast(first_char));
 
         }
 
         // boolean true or boolan false
-        if(char_size < 6 && (std::toupper(first_char) == TRUE_CHAR || std::toupper(first_char) == FALSE_CHAR)){
-            if(std::regex_match(value, boolen_true_regex)){
-                return(py::cast(true));
+        if (char_size < 6 && (std::toupper(first_char) == TRUE_CHAR || std::toupper(first_char) == FALSE_CHAR)) {
+            if (std::regex_match(value, boolen_true_regex)) {
+                return (py::cast(true));
             }
 
-            if(std::regex_match(value, boolen_false_regex)){
-                return(py::cast(false));
+            if (std::regex_match(value, boolen_false_regex)) {
+                return (py::cast(false));
             }
         }
 
-        if(is_nan(value)) {
-            return(py::cast<py::none>(Py_None));
+        if (is_nan(value)) {
+            return (py::cast<py::none>(Py_None));
         }
 
-        if( char_size == 36 && std::regex_match(value, uuid_regex)){
-            return(uuid(value));
+        if (char_size == 36 && std::regex_match(value, uuid_regex)) {
+            return (uuid(value));
         }
 
         // datetime
-        if( ( (char_size > 9) || (char_size == 8)) ) { // check date / datetime string
-            return(eval_datetime(value));
+        if (((char_size > 9) || (char_size == 8))) { // check date / datetime string
+            return (to_datetime(value));
         }
         // normal string
-        return(py::cast(value));
-
+        return (py::cast(value));
     };
 
-// get section index function
-    std::array<int, 2> idx_between(
-            std::string::const_iterator start_iter,
-            std::string::const_iterator end_iter,
-            const std::string& begin_pattern,
-            const std::string& end_pattern,
-            int skip = 0) {
-
-        std::string::const_iterator skipped_iter = start_iter;
-        std::advance(skipped_iter, skip);
-        std::array<int, 2> idx{};
-
-        // begin section index
-        auto section_start_iter = std::search(skipped_iter, end_iter,
-                // std::boyer_moore_horspool_searcher(
-                                              begin_pattern.begin(), begin_pattern.end()
-                //)
-        );
-
-        idx[0] = section_start_iter - start_iter;
-        if(idx[0] < 0) return(empty_idx);
-
-        // end section index;
-        idx[1] = std::search(section_start_iter, end_iter,
-                // std::boyer_moore_horspool_searcher(
-                             end_pattern.begin(), end_pattern.end()
-                //)
-        ) - start_iter;
-
-        if(idx[0] >= idx[1]) return(empty_idx);
-
-        idx[1] += end_pattern.size();
-
-        return (idx);
-    }
-
-    std::string trim(const std::string& str,
-                     const std::string& whitespace)
-    {
-        const auto strBegin = str.find_first_not_of(whitespace);
-        if (strBegin == std::string::npos)
-            return ""; // no content
-
-        const auto strEnd = str.find_last_not_of(whitespace);
-        const auto strRange = strEnd - strBegin + 1;
-
-        return str.substr(strBegin, strRange);
+    py::object eval_datetime(const std::string& value) {
+        return to_datetime(value);
     }
 }

@@ -7,7 +7,6 @@
 #include "digest.h"
 #include "ini.h"
 
-#include <pybind11/pybind11.h>
 namespace py = pybind11;
 #define STRINGIFY(x) #x
 #define MACRO_STRINGIFY(x) STRINGIFY(x)

@@ -30,6 +30,7 @@ namespace system_operations {
     bool dir_exists(const std::string& path);
     bool file_exists(const std::string& path);
     int mkdir(const char *path);
+    std::string path_exanduser(std::string value);
     std::string read_file(const std::string& file);
 
 }

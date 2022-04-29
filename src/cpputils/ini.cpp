@@ -6,16 +6,16 @@ namespace ini{
 
     // Parser Config (User-Input)
     struct ParserConfig {
-        map<std::string, std::vector<std::string> >files;
-        map<std::string, std::vector<std::string> >sections;
-        map<std::string, std::vector<std::string> >keys;
-        map<std::string, std::vector<py::object> >defaults;
+        std::map<std::string, std::vector<std::string> >files;
+        std::map<std::string, std::vector<std::string> >sections;
+        std::map<std::string, std::vector<std::string> >keys;
+        std::map<std::string, std::vector<py::object> >defaults;
         py::dict envir; // MAIN ENVIRONMENT for configs
         ParserConfig(
-                map<std::string, std::vector<std::string> >t_files,
-                map<std::string, std::vector<std::string> >t_sections,
-                map<std::string, std::vector<std::string> >t_keys,
-                map<std::string, std::vector<py::object> >t_defaults,
+                std::map<std::string, std::vector<std::string> >t_files,
+                std::map<std::string, std::vector<std::string> >t_sections,
+                std::map<std::string, std::vector<std::string> >t_keys,
+                std::map<std::string, std::vector<py::object> >t_defaults,
                 py::dict t_envir) :
                 files(std::move(t_files)),
                 sections(std::move(t_sections)),
@@ -196,7 +196,7 @@ namespace ini{
     }
 
     // parse all sections
-    inline void ParseAllSections(FileData t_FileData, const ParserData& t_ParserData) {
+    inline void ParseAllSections(const FileData& t_FileData, const ParserData& t_ParserData) {
 
         std::array<int, 2> section_cursor{};
         section_cursor[1] =
@@ -319,7 +319,7 @@ namespace ini{
             }
 
             for(std::string item_value : item.second) {
-                item_value = string_operations::path_exanduser(item_value);
+                item_value = system_operations::path_exanduser(item_value);
                 if(!system_operations::file_exists(item_value)){
                     py::object logger = py::module::import("logging").attr("getLogger")("cpputils.ini_load");
                     logger.attr("warning")("skipping file '" + item_value + "', because not exists!");
@@ -344,10 +344,10 @@ namespace ini{
 
 // This is a simple (lightweight) C++ function to parse ini file into python dict
 // Environment(s).
-    py::dict ini_load(const map<std::string, std::vector<std::string> >& files,
-                      const map<std::string, std::vector<std::string> >& sections,
-                      const map<std::string, std::vector<std::string> >& keys,
-                      const map<std::string, std::vector<py::object> >& defaults
+    py::dict ini_load(const std::map<std::string, std::vector<std::string> >& files,
+                      const std::map<std::string, std::vector<std::string> >& sections,
+                      const std::map<std::string, std::vector<std::string> >& keys,
+                      const std::map<std::string, std::vector<py::object> >& defaults
     ) {
 
         py::dict envir;

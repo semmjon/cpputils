@@ -38,6 +38,11 @@ PYBIND11_MODULE(_cpputils, module) {
                py::arg("value").none(false),
                R"pbdoc(evaluate string into python object)pbdoc");
 
+    module.def("eval_datetime", [](const py::str& value) -> py::object {
+                   return string_operations::eval_datetime(value.cast<std::string>()); },
+               py::arg("value").none(false),
+               R"pbdoc(evaluate string into python datetime object)pbdoc");
+
     module.def("simple_hmac", [](const std::vector<std::string>& data, const std::string &algo) -> py::object {
                    return py::cast(digest::simple_hmac({data.begin() + 1, data.end()}, data.at(0), algo)); },
                py::arg("data").none(false),

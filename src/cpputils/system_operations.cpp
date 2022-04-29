@@ -68,6 +68,20 @@ namespace system_operations{
         return 0;
     }
 
+    std::string path_exanduser(std::string value){
+        if(value.at(0) == '.' && value.at(1) == '/'){
+            value.erase(0,2);
+        }
+        if(value.at(0) == '~'){
+            char* home = std::getenv("HOME");
+            if(home!=NULL){
+                value.erase(0,1);
+                value.insert(0, std::string(home) + "/");
+            }
+        }
+        return value;
+    }
+
     std::string read_file(const std::string& file){
         try {
             std::ifstream in(file);

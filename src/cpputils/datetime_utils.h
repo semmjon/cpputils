@@ -147,8 +147,9 @@ namespace dt_utils
          strtk::fast::numeric_convert<8>(begin,date);
          if (date < 101)
             return false;
-         dt.year  = date / 10000;
          dt.month = (date % 10000) / 100;
+         if(dt.month>12) return false;
+         dt.year  = date / 10000;
          dt.day   = date % 100;
          return true;
       }
@@ -165,8 +166,9 @@ namespace dt_utils
          strtk::fast::numeric_convert<8>(begin,date);
          if (date < 101)
             return false;
+          dt.month = date % 100;
+          if(dt.month>12) return false;
          dt.year  = date / 10000;
-         dt.month = date % 100;
          dt.day   = (date % 10000) / 100;
          return true;
       }
