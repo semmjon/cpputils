@@ -47,10 +47,10 @@ test_manylinux1_x86_64:
   stage: test
   script:
     - source venv38/bin/activate
-    - pip install $(ls dist/*.whl)
+    - pip install $(ls dist/*38*.whl)
     - python -m pytest
     - source venv310/bin/activate
-    - pip install $(ls dist/*.whl)
+    - pip install $(ls dist/*310*.whl)
     - python -m pytest
   needs:
     - job: build_manylinux1_x86_64
