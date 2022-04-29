@@ -68,7 +68,7 @@ namespace system_operations{
         return 0;
     }
 
-    std::string read_file(const std::string& file, bool erase_space = false){
+    std::string read_file(const std::string& file){
         try {
             std::ifstream in(file);
             std::string contents;
@@ -77,8 +77,9 @@ namespace system_operations{
             in.seekg(0, std::ios::beg);
             in.read(&contents[0], contents.size());
             in.close();
-//            if(erase_space)
-//                contents.erase(remove(contents.begin(), contents.end(), ' '), contents.end());
+            if(&contents.back() != LINE_SEPERATOR){ // unexpected eof
+                contents.append(LINE_SEPERATOR);
+            }
             return(contents);
         } catch (const std::exception& e) {
             std::cout << file + " not a valid file!\n" +

@@ -22,6 +22,33 @@ In the future the following will be implemented:
 - c++ optimized url-tools methods
 
 Currently, the package was only tested for Linux
+## Usage
+
+```python
+from cpputils import ini_load, default_ca_path, eval_type
+
+ini_load(files={"s3_configs": ["examples/config/aws_config",
+                               "examples/config/aws_credentials",
+                               "examples/config/.s3cfg"]},
+         sections=["default", "qa"],
+         keys={"signurl_use_https": ["signurl_use_https"],
+               "aws_access_key_id": ["access_key"],
+               "aws_secret_access_key": ["secret_key"],
+               "endpoint_url": ["endpoint-url", "host_base"],
+               "region_name": ["bucket_location", "region", "aws_default_region"],
+               "service_name": ["service_name"],
+               "verify": ["ca_certs", "aws_ca_bundle", "ca_bundle"],},
+         defaults={
+             "region_name": "us-east-1",
+             "signurl_use_https": True,
+             "verify": default_ca_path(),
+             "service_name": "s3",
+         })
+
+
+
+```
+
 
 ## Installation
 ```bash

@@ -130,24 +130,29 @@ namespace ini{
                     if (start_iter == end_iter) {
                         char* env_value = std::getenv(item_value.c_str());
                         if(env_value==nullptr){
-                            std::string upper_env = item_value;
-                            std::transform(upper_env.begin(),
-                                           upper_env.end(), upper_env.begin(),
+                            std::transform(item_value.begin(),
+                                           item_value.end(), item_value.begin(),
                                            ::toupper);
-                            env_value = std::getenv(upper_env.c_str());
+                            env_value = std::getenv(item_value.c_str());
                         }
                         if(env_value!=nullptr){
-                            t_SectionData.section_envir[py::cast(item.first)] = string_operations::eval_type(env_value);
+                            t_SectionData.section_envir[py::cast(item.first)] =
+                                    t_SectionData.section_envir.attr("get")(py::cast(item.first),
+                                            string_operations::eval_type(env_value));
                             break;
                         }
                         if(!t_ParserData.m_ParserConfig.defaults.empty()) {
                             auto default_value = t_ParserData.m_ParserConfig.defaults.find(item.first);
                             if(default_value!=t_ParserData.m_ParserConfig.defaults.end()){
                                 if(!default_value->second.empty()){
-                                    t_SectionData.section_envir[py::cast(item.first)] = default_value->second[0];
+                                    t_SectionData.section_envir[py::cast(item.first)] =
+                                            t_SectionData.section_envir.attr("get")(py::cast(item.first),
+                                                                                    default_value->second[0]);
                                     break;
                                 }
-                                t_SectionData.section_envir[py::cast(item.first)] = py::none();
+                                t_SectionData.section_envir[py::cast(item.first)] =
+                                        t_SectionData.section_envir.attr("get")(py::cast(item.first),
+                                                                                py::none());
                             }
                         }
                         break;
@@ -175,10 +180,11 @@ namespace ini{
         }
     }
 
-    inline void ParseSectionsDefault(FileData t_FileData, const ParserData& t_ParserData, py::dict section_envir) {
+    inline void ParseSectionsDefault(FileData t_FileData, const ParserData& t_ParserData,
+                                     py::dict section_envir, bool defaults_only = false) {
         std::array<int, 2> section_cursor{};
         t_FileData.contents.insert(0, 1, NEWLINE);
-        section_cursor[0] = 0;
+        section_cursor[0] = (int) defaults_only * (int) t_FileData.contents.size();
         section_cursor[1] = (int) t_FileData.contents.size();
         // parse all keys in all sections for config without section
         t_ParserData.ParseKeys(
@@ -221,8 +227,8 @@ namespace ini{
             // std::ptrdiff_t section_name_idx = std::find(config.sections.begin(),
             // config.sections.end(), section_name) - config.sections.begin();
             // if(section_name_idx >= config.sections.size()) continue;
-
-            t_FileData.file_envir[py::cast(section_name)] = py::dict();
+            t_FileData.file_envir[py::cast(section_name)]  =
+                    t_FileData.file_envir.attr("get")(py::cast(section_name), py::dict());
 
             if (!section_cursor[1]){
                 section_cursor[1] = (int) t_FileData.contents.size() - 1;
@@ -255,10 +261,10 @@ namespace ini{
                 continue;
             }
 
-            for(const auto& item_value : item.second){
+            t_FileData.file_envir[py::cast(item.first)] =
+                    t_FileData.file_envir.attr("get")(py::cast(item.first), py::dict());
 
-                t_FileData.file_envir[py::cast(item.first)] =
-                        py::dict();
+            for(const auto& item_value : item.second){
 
                 // config.begin_pattern is section name + pattern
                 std::array<int, 2> section_cursor = string_operations::idx_between(
@@ -288,6 +294,10 @@ namespace ini{
                                 t_FileData // Parent ini data
                         ), t_ParserData);
             }
+            if(!py::len(t_FileData.file_envir[py::cast(item.first)])){
+                ParseSectionsDefault(t_FileData, t_ParserData,
+                                     t_FileData.file_envir[py::cast(item.first)], true);
+            }
         }
     }
 
@@ -295,11 +305,11 @@ namespace ini{
 
         for (const auto& item : t_ParserData.m_ParserConfig.files) {
 
-            py::dict file_envir = py::dict();
-
+            py::dict file_envir;
             if(t_ParserData.m_ParserConfig.files.size() == 1 && string_operations::is_nan(item.first)){
                 file_envir = t_ParserData.m_ParserConfig.envir;
             } else {
+                file_envir = t_ParserData.m_ParserConfig.envir.attr("get")(py::cast(item.first), py::dict());
                 t_ParserData.m_ParserConfig.envir[py::cast(item.first)] = file_envir;
             }
 
@@ -311,21 +321,21 @@ namespace ini{
             for(std::string item_value : item.second) {
                 item_value = string_operations::path_exanduser(item_value);
                 if(!system_operations::file_exists(item_value)){
-//                    py::module logger = py::module::import("logging");
-//                    logger.attr("getLogger")("cpputils.ini_load").attr("warning")("skipping file '" + item_value + "', because not exists!");
+                    py::object logger = py::module::import("logging").attr("getLogger")("cpputils.ini_load");
+                    logger.attr("warning")("skipping file '" + item_value + "', because not exists!");
                     continue;
                 }
 
                 FileData m_FileData(file_envir,
-                                    system_operations::read_file(item_value, true));
+                                    system_operations::read_file(item_value));
                 t_ParserData.ParseSections(m_FileData, t_ParserData);
             }
         }
 
         // load defaults if no file exists / providing
         if(t_ParserData.m_ParserConfig.envir.empty() &&  !t_ParserData.m_ParserConfig.defaults.empty()){
-//            py::module logger = py::module::import("logging");
-//            logger.attr("getLogger")("cpputils.ini_load").attr("warning")("0 files found, loading default values only.");
+            py::object logger = py::module::import("logging").attr("getLogger")("cpputils.ini_load");
+            logger.attr("warning")("0 files found, loading default values only.");
             py::dict file_envir = t_ParserData.m_ParserConfig.envir;
             FileData m_FileData(file_envir,"");
             t_ParserData.ParseSections(m_FileData, t_ParserData);
