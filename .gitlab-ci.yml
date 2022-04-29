@@ -14,48 +14,62 @@ before_script:
   - python3.10 --version  # For debugging
   - python3.8 -m pip install --upgrade pip
   - python3.8 -m pip install virtualenv
-  - python3.8 -m venv ./venv
-  - source venv/bin/activate
+  - python3.8 -m venv ./venv38
+  - python3.10 -m pip install --upgrade pip
+  - python3.10 -m pip install virtualenv
+  - python3.10 -m venv ./venv310
+  - source venv38/bin/activate
+  - python -m pip install build
+  - python -m pip install pytest
+  - source venv310/bin/activate
   - python -m pip install build
   - python -m pip install pytest
   - python -m pip install auditwheel
   - python -m pip install twine
   - cat $PYPIRC > /root/.pypirc
 
-build_38_manylinux1_x86_64:
+build_manylinux1_x86_64:
   image: quay.io/pypa/manylinux2014_x86_64:latest
   #when: manual
   stage: build
   script:
+    - source venv38/bin/activate
+    - python -m build
+    - source venv310/bin/activate
     - python -m build
   artifacts:
     paths:
       - dist/*.whl
 
-test_38_manylinux1_x86_64:
+test_manylinux1_x86_64:
   image: quay.io/pypa/manylinux2014_x86_64:latest
   #when: manual
   stage: test
   script:
+    - source venv38/bin/activate
+    - pip install $(ls dist/*.whl)
+    - python -m pytest
+    - source venv310/bin/activate
     - pip install $(ls dist/*.whl)
     - python -m pytest
   needs:
-    - job: build_38_manylinux1_x86_64
+    - job: build_manylinux1_x86_64
       artifacts: true
 
-publish_38_manylinux1_x86_64:
+publish_manylinux1_x86_64:
   image: quay.io/pypa/manylinux2014_x86_64:latest
   # when: manual
   stage: publish
   only:
     - tags
   script:
+    - source venv310/bin/activate
     - python -m auditwheel repair $(ls dist/*.whl)
     - python -m twine upload -r pypi $(ls wheelhouse/*.whl) --verbose
   needs:
-    - job: build_38_manylinux1_x86_64
+    - job: build_manylinux1_x86_64
       artifacts: true
-    - job: test_38_manylinux1_x86_64
+    - job: test_manylinux1_x86_64
 
 push_to_github:
   image: alpine/git
@@ -73,6 +87,6 @@ push_to_github:
     - git commit -m "$CI_COMMIT_MESSAGE" || echo "nothing to commit!"
     - git push -f
   needs:
-    - job: build_38_manylinux1_x86_64
+    - job: build_manylinux1_x86_64
       artifacts: true
-    - job: test_38_manylinux1_x86_64
+    - job: test_manylinux1_x86_64
