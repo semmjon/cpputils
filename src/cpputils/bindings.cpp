@@ -20,7 +20,7 @@ PYBIND11_MODULE(_cpputils, module) {
                            const py::object& sections,
                            const py::object& keys,
                            const py::object& defaults
-                           ) -> py::object {
+                           ) -> py::dict {
                 const auto m_files = string_operations::convert_to_map_str(files);
                 const auto m_sections = string_operations::convert_to_map_str(sections);
                 const auto m_keys = string_operations::convert_to_map_str(keys);
