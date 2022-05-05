@@ -38,7 +38,7 @@ variables:
 
 build_windows:
   stage: build
-  image: docker pull winamd64/python:latest
+  image: winamd64/python:latest
   when: manual
   script:
     - python3 --version  # For debugging
