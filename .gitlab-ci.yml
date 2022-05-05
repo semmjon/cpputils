@@ -8,10 +8,13 @@ variables:
   TWINE_USERNAME: $TWINE_USERNAME
   TWINE_PASSWORD: $TWINE_PASSWORD
 
-before_script:
-  - ldd --version ldd  # For debugging
-  - python3.8 --version  # For debugging
-  - python3.10 --version  # For debugging
+.get_tag_version: &get_tag_version
+  before_script:
+    - VERSION=$(curl -Ss --request GET --header "PRIVATE-TOKEN: <REPLACE_BY_A_VARIABLE>" "https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/repository/tags" | jq -r '.[0] | .name')
+    - test -z "$VERSION" && echo "no version tag found" && exit 1
+
+.python_build_before_script: &python_build_before_script
+  before_script:
   - python3.8 -m pip install --upgrade pip
   - python3.8 -m pip install virtualenv
   - python3.8 -m venv ./venv38
@@ -28,7 +31,20 @@ before_script:
   - python -m pip install twine
   - cat $PYPIRC > /root/.pypirc
 
+.build_before_script: &build_before_script
+  before_script:
+    - ldd --version ldd  # For debugging
+    - python3.8 --version  # For debugging
+    - python3.10 --version  # For debugging
+  <<:
+    - *get_tag_version
+    - *python_build_before_script
+
+.before_script: &before_script
+  <<: *build_before_script
+
 build_manylinux1_x86_64:
+  <<: *before_script
   image: quay.io/pypa/manylinux2014_x86_64:latest
   #when: manual
   stage: build
@@ -42,6 +58,7 @@ build_manylinux1_x86_64:
       - dist/*.whl
 
 test_manylinux1_x86_64:
+  <<: *python_build_before_script
   image: quay.io/pypa/manylinux2014_x86_64:latest
   #when: manual
   stage: test
@@ -57,6 +74,7 @@ test_manylinux1_x86_64:
       artifacts: true
 
 publish_manylinux1_x86_64:
+  <<: *python_build_before_script
   image: quay.io/pypa/manylinux2014_x86_64:latest
   # when: manual
   stage: publish
@@ -72,6 +90,12 @@ publish_manylinux1_x86_64:
     - job: build_manylinux1_x86_64
       artifacts: true
     - job: test_manylinux1_x86_64
+
+publish_windows:
+  image: quay.io/winamd64/python:latest
+  when: manual
+  script:
+    - echo BLA
 
 push_to_github:
   image: alpine/git
