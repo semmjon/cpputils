@@ -19,7 +19,7 @@ variables:
     #- curl https://pub.pki.1and1.org/pukirootca1.crt -o /etc/pki/ca-trust/source/anchors/pukirootca1.crt && update-ca-trust
     - yum install jq -y
     - |
-      VERSION=$(curl --insecure -Ss --request GET --header "PRIVATE-TOKEN: $GITLAB_ACCESS_TOKEN" "https://gitlab.df.server.lan/api/v4/projects/${CI_PROJECT_ID}/repository/tags" | jq -r '.[0] | .name')
+      VERSION=$(curl --insecure -Ss --request GET --header "PRIVATE-TOKEN: $GITLAB_ACCESS_TOKEN" "https://gitlab.blubblub.tech/api/v4/projects/${CI_PROJECT_ID}/repository/tags" | jq -r '.[0] | .name')
     - python3.8 -m pip install --upgrade pip
     - python3.8 -m pip install virtualenv
     - python3.8 -m venv ./venv38
@@ -38,7 +38,7 @@ variables:
 
 build_windows:
   stage: build
-  image: mcr.microsoft.com/windows/servercore
+  image: mcr.microsoft.com/windows/servercore:ltsc2022
   when: manual
   script:
     - python3 --version  # For debugging
