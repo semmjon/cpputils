@@ -8,7 +8,7 @@ variables:
   TWINE_USERNAME: $TWINE_USERNAME
   TWINE_PASSWORD: $TWINE_PASSWORD
   VERSION: $CI_COMMIT_TAG
-  PYPI_REPO_TAG: local
+  PYPI_REPO_TAG: pypi
 
   .build_before_script: &build_before_script
     before_script:
@@ -16,7 +16,7 @@ variables:
       - python3.8 --version  # For debugging
       - python3.10 --version  # For debugging
       - ls -l   # For debugging
-      - curl https://pub.pki.1and1.org/pukirootca1.crt -o /etc/pki/ca-trust/source/anchors/pukirootca1.crt && update-ca-trust
+      #- curl https://pub.pki.1and1.org/pukirootca1.crt -o /etc/pki/ca-trust/source/anchors/pukirootca1.crt && update-ca-trust
       - yum install jq -y
       - |
         VERSION=$(curl --insecure -Ss --request GET --header "PRIVATE-TOKEN: $GITLAB_ACCESS_TOKEN" "https://gitlab.df.server.lan/api/v4/projects/${CI_PROJECT_ID}/repository/tags" | jq -r '.[0] | .name')
