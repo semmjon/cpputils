@@ -36,6 +36,13 @@ variables:
     - python -m pip install twine
     - cat $PYPIRC > /root/.pypirc
 
+build_windows:
+  stage: build
+  image: quay.io/winamd64/python:latest
+  when: manual
+  script:
+    - echo BLA
+
 build_manylinux1_x86_64:
   <<: *build_before_script
   image: quay.io/pypa/manylinux2014_x86_64:latest
@@ -84,11 +91,6 @@ publish_manylinux1_x86_64:
       artifacts: true
     - job: test_manylinux1_x86_64
 
-publish_windows:
-  image: quay.io/winamd64/python:latest
-  when: manual
-  script:
-    - echo BLA
 
 push_to_github:
   image: alpine/git
