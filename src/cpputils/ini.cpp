@@ -255,14 +255,18 @@ namespace ini{
 
         for (const auto& item : t_ParserData.m_ParserConfig.sections) {
 
-            if(t_ParserData.m_ParserConfig.sections.size() == 1 && string_operations::is_nan(item.first)){
-                py::dict section_envir = t_FileData.file_envir;
+            py::dict section_envir;
+            if(string_operations::is_nan(item.first)){
+                section_envir = t_FileData.file_envir;
+            } else {
+                t_FileData.file_envir[py::cast(item.first)] =
+                        t_FileData.file_envir.attr("get")(py::cast(item.first), py::dict());
+                section_envir = t_FileData.file_envir[py::cast(item.first)];
+            }
+            if(item.second.empty()){
                 ParseSectionsDefault(t_FileData, t_ParserData, section_envir);
                 continue;
             }
-
-            t_FileData.file_envir[py::cast(item.first)] =
-                    t_FileData.file_envir.attr("get")(py::cast(item.first), py::dict());
 
             for(const auto& item_value : item.second){
 
@@ -276,7 +280,6 @@ namespace ini{
                     // handling if section not found or has no section
 
                     if(string_operations::is_nan(item_value)) {
-                        py::dict section_envir = t_FileData.file_envir[py::cast(item.first)];
                         ParseSectionsDefault(t_FileData, t_ParserData, section_envir);
                     }
 
@@ -289,14 +292,13 @@ namespace ini{
                 // parse all keys
                 t_ParserData.ParseKeys(
                         SectionData(
-                                t_FileData.file_envir[py::cast(item.first)], // Section Environment
+                                section_envir, // Section Environment
                                 section_cursor, // Cursor for content
                                 t_FileData // Parent ini data
                         ), t_ParserData);
             }
-            if(!py::len(t_FileData.file_envir[py::cast(item.first)])){
-                ParseSectionsDefault(t_FileData, t_ParserData,
-                                     t_FileData.file_envir[py::cast(item.first)], true);
+            if(!py::len(section_envir)){
+                ParseSectionsDefault(t_FileData, t_ParserData, section_envir, true);
             }
         }
     }
@@ -335,7 +337,7 @@ namespace ini{
         // load defaults if no file exists / providing
         if(t_ParserData.m_ParserConfig.envir.empty() &&  !t_ParserData.m_ParserConfig.defaults.empty()){
             py::object logger = py::module::import("logging").attr("getLogger")("cpputils.ini_load");
-            logger.attr("warning")("0 files found, loading default values only.");
+            logger.attr("warning")("no sections or files to load, loading default values only.");
             py::dict file_envir = t_ParserData.m_ParserConfig.envir;
             FileData m_FileData(file_envir,"");
             t_ParserData.ParseSections(m_FileData, t_ParserData);

@@ -258,3 +258,6 @@ class TestIniLoad(unittest.TestCase):
                 "website_index": "index.html",
             },
         )
+        self.assertEqual(
+            ini_load({None: "tests/configs/.s3cfg"}, {None: "test"}), {"test": "test1"}
+        )

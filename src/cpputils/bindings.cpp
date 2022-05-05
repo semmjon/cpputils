@@ -23,7 +23,9 @@ PYBIND11_MODULE(_cpputils, module) {
                            ) -> py::dict {
                 const auto m_files = string_operations::convert_to_map_str(files);
                 const auto m_sections = string_operations::convert_to_map_str(sections);
-                const auto m_keys = string_operations::convert_to_map_str(keys);
+                const auto m_keys = keys.is_none() ?
+                        string_operations::convert_to_map_str(defaults.is_none() ? defaults : defaults.attr("keys")) :
+                        string_operations::convert_to_map_str(keys);
                 const auto m_defaults = string_operations::convert_to_map_py(defaults);
                 return ini::ini_load(m_files, m_sections, m_keys, m_defaults);
                 },
