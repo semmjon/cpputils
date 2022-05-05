@@ -38,7 +38,7 @@ variables:
 
 build_windows:
   stage: build
-  image: winamd64/python:latest
+  image: mcr.microsoft.com/windows/servercore
   when: manual
   script:
     - python3 --version  # For debugging
