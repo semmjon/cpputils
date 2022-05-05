@@ -220,15 +220,20 @@ namespace ini{
                     section_cursor[1],
                     section_cursor[0] - section_cursor[1]);
 
-            section_cursor[1] =
-                    (int) t_FileData.contents.find_first_of(SECTION_OPEN_CHAR,
-                                                            section_cursor[0]) + 1;
-
-            // std::ptrdiff_t section_name_idx = std::find(config.sections.begin(),
-            // config.sections.end(), section_name) - config.sections.begin();
-            // if(section_name_idx >= config.sections.size()) continue;
             t_FileData.file_envir[py::cast(section_name)]  =
                     t_FileData.file_envir.attr("get")(py::cast(section_name), py::dict());
+
+            section_cursor[1] =
+                    (int) t_FileData.contents.find_first_of(SECTION_OPEN_CHAR,
+                                                            section_cursor[1]) + 1;
+
+            while(section_cursor[1] &&
+            t_FileData.contents.at(section_cursor[1]-2) != NEWLINE &&
+            t_FileData.contents.at(section_cursor[1]-2) != WHITESPACE){
+                section_cursor[1] =
+                        (int) t_FileData.contents.find_first_of(SECTION_OPEN_CHAR,
+                                                                section_cursor[1]) + 1;
+            }
 
             if (!section_cursor[1]){
                 section_cursor[1] = (int) t_FileData.contents.size() - 1;

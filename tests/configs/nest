@@ -1,0 +1,3 @@
+[default]
+test={"bla": "blub"}
+test2[BLA]='[bla]=bla'

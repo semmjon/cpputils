@@ -13,6 +13,7 @@ namespace ini {
     inline const char COMMENT_CHAR = '#';
     inline const char NEWVALUE = '=';
     inline const char NEWLINE = system_operations::LINE_SEPERATOR[std::strlen(system_operations::LINE_SEPERATOR) - 1];
+    inline const char WHITESPACE = ' ';
     inline const std::string SECTION_OPEN_CHAR = "[";
     inline const std::string SECTION_CLOSE_CHAR = "]";
     inline const std::string BEGIN_PATTERN = system_operations::LINE_SEPERATOR + SECTION_OPEN_CHAR;

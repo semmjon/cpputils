@@ -261,3 +261,7 @@ class TestIniLoad(unittest.TestCase):
         self.assertEqual(
             ini_load({None: "tests/configs/.s3cfg"}, {None: "test"}), {"test": "test1"}
         )
+        self.assertEqual(
+            ini_load({None: "tests/configs/nest"}),
+            {"default": {"test": '{"bla": "blub"}', "test2[BLA]": "[bla]=bla"}},
+        )
