@@ -182,9 +182,6 @@ namespace ini{
 
                     if(!value.empty()){
                         switch(type) {
-                            case 0: {
-                                t_SectionData.section_envir[py::cast(item.first)] = string_operations::eval_type(value);
-                            } break;
                             case 1: {
                                 t_SectionData.section_envir[py::cast(item.first)] =
                                         t_SectionData.section_envir.attr("get")(
@@ -196,9 +193,13 @@ namespace ini{
                                 t_SectionData.section_envir[py::cast(item.first)] =
                                         t_SectionData.section_envir.attr("get")(
                                                 py::cast(item.first), py::dict());
-                                t_SectionData.section_envir[py::cast(item.first)][py::cast(string_operations::trim(
-                                        std::string(start_iter, value_iter)))] =
+                                t_SectionData.section_envir[py::cast(item.first)][py::cast(
+                                        std::string(start_iter, value_iter))] =
                                         string_operations::eval_type(value);
+                            } break;
+                            default: {
+                                if(std::string(start_iter, value_iter)!=item.first) continue;
+                                t_SectionData.section_envir[py::cast(item.first)] = string_operations::eval_type(value);
                             } break;
                         }
                         continue;

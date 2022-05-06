@@ -3,8 +3,6 @@ import unittest
 
 from cpputils import default_ca_path, ini_load
 
-ini_load({None: "tests/configs/nest"}, keys={"test3": "**"})
-
 
 class TestIniLoad(unittest.TestCase):
     def load_examples(self):
