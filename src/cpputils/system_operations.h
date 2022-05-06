@@ -6,6 +6,7 @@
 #include <sstream>
 #include <iostream>
 #include <algorithm>
+#include <cstring>
 
 namespace system_operations {
 
@@ -26,6 +27,7 @@ namespace system_operations {
         inline const char FILE_SEPERATOR = '/'; // Mac OS X uses \n
     #endif
 
+    inline const char NEWLINE = LINE_SEPERATOR[std::strlen(LINE_SEPERATOR) - 1];
     bool exists(const std::string& path);
     bool dir_exists(const std::string& path);
     bool file_exists(const std::string& path);

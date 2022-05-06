@@ -12,5 +12,17 @@ set_target_properties(cpputils PROPERTIES OUTPUT_NAME cpputils/_cpputils)
 target_compile_definitions(cpputils
                            PRIVATE VERSION_INFO=${EXAMPLE_VERSION_INFO})
 
-add_compile_options("-Wall" "-Wpedantic" "-Wextra" "-fexceptions"
-                    "$<$<CONFIG:DEBUG>:-O0;-g3;-ggdb>")
+add_compile_options(
+  "-Wall"
+  "-Wpedantic"
+  "-Wextra"
+  "-fexceptions"
+  "$<$<CONFIG:DEBUG>:-O0;-g3;-ggdb>"
+  "-Wextra"
+  "-Wundef"
+  "-pedantic"
+  "-msse2"
+  "-msse3"
+  "-mpopcnt"
+  "-funsafe-math-optimizations"
+  "-fno-math-errno")

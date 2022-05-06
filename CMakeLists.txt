@@ -7,5 +7,18 @@ add_subdirectory(lib/pybind11)
 include_directories(lib)
 add_subdirectory(src/cpputils)
 
-add_compile_options("-Wall" "-Wpedantic" "-Wextra" "-fexceptions"
-                    "$<$<CONFIG:DEBUG>:-O0;-g3;-ggdb>")
+add_compile_options(
+  "-Wall"
+  "-Wpedantic"
+  "-Wextra"
+  "-fexceptions"
+  "$<$<CONFIG:DEBUG>:-O0;-g3;-ggdb>"
+  "-Wall"
+  "-Wextra"
+  "-Wundef"
+  "-pedantic"
+  "-msse2"
+  "-msse3"
+  "-mpopcnt"
+  "-funsafe-math-optimizations"
+  "-fno-math-errno")

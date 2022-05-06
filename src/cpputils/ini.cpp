@@ -71,23 +71,23 @@ namespace ini{
 
         std::advance(start_iter, t_SectionData.section_cursor[0]);
         std::advance(end_iter, t_SectionData.section_cursor[1]);
-        start_iter = std::find(start_iter, end_iter, NEWLINE); // next line after section header
+        start_iter = std::find(start_iter, end_iter, system_operations::NEWLINE); // next line after section header
 
-        std::string::const_iterator next_line_iter = std::find(start_iter, end_iter, NEWLINE);;
+        std::string::const_iterator next_line_iter = std::find(start_iter, end_iter, system_operations::NEWLINE);;
         std::string::const_iterator next_value_iter;
 
         // // split name and value for each line if not empty or comment
-        while (true) {
+        while (next_line_iter != end_iter) {
 
             start_iter = next_line_iter + 1; // skip line
 
-            next_line_iter = std::find(start_iter, end_iter, NEWLINE);
+            next_line_iter = std::find(start_iter, end_iter, system_operations::NEWLINE);
             next_line_iter = std::find(start_iter, next_line_iter, COMMENT_CHAR);
             next_value_iter = std::find(start_iter, next_line_iter, NEWVALUE);
 
-            if (next_line_iter == end_iter) {
-                break;
-            }
+//            if () {
+//                break;
+//            }
 
             if(start_iter == next_value_iter)
                 continue;
@@ -103,18 +103,29 @@ namespace ini{
 
     inline void ParseDefinedKeys(SectionData t_SectionData, const ParserData& t_ParserData) {
 
+
+        std::string::const_iterator start_iter = t_SectionData.m_FileData.contents.begin();
+        std::string::const_iterator end_iter = t_SectionData.m_FileData.contents.begin();
+        int type = 0; // default, 1=list, 2=dict
+
         for (const auto& item : t_ParserData.m_ParserConfig.keys) {
 
             for (auto item_value : item.second) {
-
-                std::string::const_iterator start_iter = t_SectionData.m_FileData.contents.begin();
-                std::string::const_iterator end_iter = t_SectionData.m_FileData.contents.begin();
 
                 std::advance(start_iter, t_SectionData.section_cursor[0]);
                 std::advance(end_iter, t_SectionData.section_cursor[1]);
 
                 std::string::const_iterator line_iter;
-                std::string::const_iterator value_iter = std::find(start_iter, end_iter, NEWLINE); // next line after section header
+                std::string::const_iterator value_iter = std::find(start_iter, end_iter, system_operations::NEWLINE); // next line after section header
+
+                if (item_value == "*"){
+                    type = 1;
+                    item_value = item.first;
+                }
+                if (item_value == "**"){
+                    type = 2;
+                    item_value = item.first;
+                }
 
                 while(true){
 
@@ -158,20 +169,39 @@ namespace ini{
                         break;
                     }
 
-                    line_iter = std::find(start_iter + 1, end_iter, NEWLINE);
+                    line_iter = std::find(start_iter + 1, end_iter, system_operations::NEWLINE);
                     value_iter = std::find(start_iter + 1, line_iter, NEWVALUE);
 
                     // get total key name if only prefix
                     while(true){
-                        if( std::string(start_iter-1, start_iter) == &NEWLINE) break;
+                        if(type || std::string(start_iter-1, start_iter) == &system_operations::NEWLINE) break;
                         start_iter--;
                     }
 
                     std::string value = string_operations::trim(std::string(value_iter, line_iter).erase(0, 1));
 
                     if(!value.empty()){
-                        t_SectionData.section_envir[py::cast(item.first)] = string_operations::eval_type(value);
-                        break;
+                        switch(type) {
+                            case 0: {
+                                t_SectionData.section_envir[py::cast(item.first)] = string_operations::eval_type(value);
+                            } break;
+                            case 1: {
+                                t_SectionData.section_envir[py::cast(item.first)] =
+                                        t_SectionData.section_envir.attr("get")(
+                                                py::cast(item.first), py::list());
+                                t_SectionData.section_envir[py::cast(item.first)].attr("append")(
+                                        string_operations::eval_type(value));
+                            } break;
+                            case 2: {
+                                t_SectionData.section_envir[py::cast(item.first)] =
+                                        t_SectionData.section_envir.attr("get")(
+                                                py::cast(item.first), py::dict());
+                                t_SectionData.section_envir[py::cast(item.first)][py::cast(string_operations::trim(
+                                        std::string(start_iter, value_iter)))] =
+                                        string_operations::eval_type(value);
+                            } break;
+                        }
+                        continue;
                     }
 
                     start_iter+=1;
@@ -183,7 +213,7 @@ namespace ini{
     inline void ParseSectionsDefault(FileData t_FileData, const ParserData& t_ParserData,
                                      py::dict section_envir, bool defaults_only = false) {
         std::array<int, 2> section_cursor{};
-        t_FileData.contents.insert(0, 1, NEWLINE);
+        t_FileData.contents.insert(0, 1, system_operations::NEWLINE);
         section_cursor[0] = (int) defaults_only * (int) t_FileData.contents.size();
         section_cursor[1] = (int) t_FileData.contents.size();
         // parse all keys in all sections for config without section
@@ -228,7 +258,7 @@ namespace ini{
                                                             section_cursor[1]) + 1;
 
             while(section_cursor[1] &&
-            t_FileData.contents.at(section_cursor[1]-2) != NEWLINE &&
+            t_FileData.contents.at(section_cursor[1]-2) != system_operations::NEWLINE &&
             t_FileData.contents.at(section_cursor[1]-2) != WHITESPACE){
                 section_cursor[1] =
                         (int) t_FileData.contents.find_first_of(SECTION_OPEN_CHAR,

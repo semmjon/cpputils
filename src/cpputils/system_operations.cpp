@@ -91,7 +91,7 @@ namespace system_operations{
             in.seekg(0, std::ios::beg);
             in.read(&contents[0], contents.size());
             in.close();
-            if(&contents.back() != LINE_SEPERATOR){ // unexpected eof
+            if(contents.back() != NEWLINE){ // unexpected eof
                 contents.append(LINE_SEPERATOR);
             }
             return(contents);

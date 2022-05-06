@@ -3,6 +3,8 @@ import unittest
 
 from cpputils import default_ca_path, ini_load
 
+ini_load({None: "tests/configs/nest"}, keys={"test3": "**"})
+
 
 class TestIniLoad(unittest.TestCase):
     def load_examples(self):
@@ -263,5 +265,29 @@ class TestIniLoad(unittest.TestCase):
         )
         self.assertEqual(
             ini_load({None: "tests/configs/nest"}),
-            {"default": {"test": '{"bla": "blub"}', "test2[BLA]": "[bla]=bla"}},
+            {
+                "default": {
+                    "test3": 12345,
+                    "test": '{"bla": "blub"}',
+                    "test2[BLA]": "[bla]=bla",
+                    "test4": 12345,
+                }
+            },
+        )
+        self.assertEqual(
+            ini_load({None: "tests/configs/nest"}, keys={"test3": "*"}),
+            {"default": {"test3": [1234, 123456, 12345]}},
+        )
+        self.assertEqual(
+            ini_load({None: "tests/configs/nest"}, keys={"test": "**"}),
+            {
+                "default": {
+                    "test": {
+                        "test3": 12345,
+                        "test": '{"bla": "blub"}',
+                        "test2[BLA]": "[bla]=bla",
+                        "test4": 12345,
+                    }
+                }
+            },
         )

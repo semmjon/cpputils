@@ -121,18 +121,34 @@ namespace string_operations {
         return str.substr(strBegin, strRange);
     }
 
-    // String int64 converter
-    uint64_t parse64(const char *s) {
-        uint64_t i;
-        char c ;
-        int scanned = sscanf(s, "%" SCNx64 "%c", &i, &c);
-        if (scanned == 1) return i;
-        if (scanned > 1) {
-            // TBD about extra data found
-            return i;
-        }
-        // TBD failed to scan;
-        return 0;
+    std::uint64_t parse8Chars(const char* string) noexcept
+    {
+        std::uint64_t chunk = 0;
+        std::memcpy(&chunk, string, sizeof(chunk));
+
+        // 1-byte mask trick (works on 4 pairs of single digits)
+        std::uint64_t lower_digits = (chunk & 0x0f000f000f000f00) >> 8;
+        std::uint64_t upper_digits = (chunk & 0x000f000f000f000f) * 10;
+        chunk = lower_digits + upper_digits;
+
+        // 2-byte mask trick (works on 2 pairs of two digits)
+        lower_digits = (chunk & 0x00ff000000ff0000) >> 16;
+        upper_digits = (chunk & 0x000000ff000000ff) * 100;
+        chunk = lower_digits + upper_digits;
+
+        // 4-byte mask trick (works on pair of four digits)
+        lower_digits = (chunk & 0x0000ffff00000000) >> 32;
+        upper_digits = (chunk & 0x000000000000ffff) * 10000;
+        chunk = lower_digits + upper_digits;
+
+        return chunk;
+    }
+
+    std::uint64_t parse64(std::string_view s) noexcept
+    {
+        std::uint64_t upper_digits = parse8Chars(s.data());
+        std::uint64_t lower_digits = parse8Chars(s.data() + 8);
+        return upper_digits * 100000000 + lower_digits;
     }
 
     dt_utils::datetime global_dt{};
