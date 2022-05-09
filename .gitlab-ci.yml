@@ -110,7 +110,6 @@ push_to_github:
     - git remote set-url origin https://$GITHUB_USERNAME:$GITHUB_TOKEN@github.com/semmjon/cpputils.git
     - git add .
     - git commit -m "$CI_COMMIT_MESSAGE" || echo "nothing to commit!"
-    - echo $(if [ -z ${CI_COMMIT_TAG+x} ]; then git tag -a $VERSION -m "$CI_COMMIT_MESSAGE" fi)
     - git push -f $(if [ -z ${CI_COMMIT_TAG+x} ]; then echo ""; else echo "origin '$VERSION'"; fi)
 
   needs:
