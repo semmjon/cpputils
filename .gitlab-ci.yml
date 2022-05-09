@@ -38,9 +38,11 @@ variables:
 
 build_windows:
   stage: build
-  image: mcr.microsoft.com/windows/servercore:ltsc2022
+  image: mcr.microsoft.com/windows/servercore:ltsc2016-amd64
   when: manual
   script:
+    - ldd --version ldd
+    - ls -l
     - python3 --version  # For debugging
     - python3.10 --version
     - python3.8 --version
