@@ -262,7 +262,7 @@ class TestIniLoad(unittest.TestCase):
             ini_load({None: "tests/configs/.s3cfg"}, {None: "test"}), {"test": "test1"}
         )
         self.assertEqual(
-            ini_load({None: "tests/configs/nest"}),
+            ini_load({None: "tests/configs/some_config"}),
             {
                 "default": {
                     "test3": 12345,
@@ -273,11 +273,11 @@ class TestIniLoad(unittest.TestCase):
             },
         )
         self.assertEqual(
-            ini_load({None: "tests/configs/nest"}, keys={"test3": "*"}),
+            ini_load({None: "tests/configs/some_config"}, keys={"test3": "*"}),
             {"default": {"test3": [1234, 123456, 12345]}},
         )
         self.assertEqual(
-            ini_load({None: "tests/configs/nest"}, keys={"test": "**"}),
+            ini_load({None: "tests/configs/some_config"}, keys={"test": "**"}),
             {
                 "default": {
                     "test": {
@@ -288,4 +288,8 @@ class TestIniLoad(unittest.TestCase):
                     }
                 }
             },
+        )
+        self.assertEqual(
+            ini_load({None: "tests/configs/some_config"}, keys={"user": ["username"]}),
+            {"default": {"user": "testuser"}, "not_default": {"user": "testuser"}},
         )

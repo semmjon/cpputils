@@ -106,11 +106,11 @@ namespace ini{
 
         std::string::const_iterator start_iter = t_SectionData.m_FileData.contents.begin();
         std::string::const_iterator end_iter = t_SectionData.m_FileData.contents.begin();
-        int type = 0; // default, 1=list, 2=dict
 
         for (const auto& item : t_ParserData.m_ParserConfig.keys) {
 
             for (auto item_value : item.second) {
+                int type = 0; // default, 1=list, 2=dict
 
                 std::advance(start_iter, t_SectionData.section_cursor[0]);
                 std::advance(end_iter, t_SectionData.section_cursor[1]);
@@ -139,6 +139,10 @@ namespace ini{
                             );
 
                     if (start_iter == end_iter) {
+                        if(!t_SectionData.section_envir.attr("get")(
+                                py::cast(item.first), py::none()).is_none()){
+                            break;
+                        }
                         char* env_value = std::getenv(item_value.c_str());
                         if(env_value==nullptr){
                             std::transform(item_value.begin(),
@@ -198,7 +202,7 @@ namespace ini{
                                         string_operations::eval_type(value);
                             } break;
                             default: {
-                                if(std::string(start_iter, value_iter)!=item.first) continue;
+                                if(std::string(start_iter, value_iter)!=item_value) continue;
                                 t_SectionData.section_envir[py::cast(item.first)] = string_operations::eval_type(value);
                             } break;
                         }

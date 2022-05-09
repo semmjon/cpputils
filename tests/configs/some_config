@@ -1,0 +1,20 @@
+[default]
+test3=1234
+test3=123456
+test={"bla": "blub"}
+test2[BLA]='[bla]=bla'
+test3=12345
+test4=12345
+username=testuser
+user=testuser2
+
+
+[not_default]
+test3=1234
+test3=123456
+test={"bla": "blub"}
+test2[BLA]='[bla]=bla'
+test3=12345
+test4=12345
+username=testuser
+user=testuser2
