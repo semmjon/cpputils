@@ -290,6 +290,9 @@ class TestIniLoad(unittest.TestCase):
             },
         )
         self.assertEqual(
-            ini_load({None: "tests/configs/some_config"}, keys={"user": ["username"]}),
+            ini_load(
+                {None: "tests/configs/some_config"},
+                keys={"user": ["username"], "password": ["password"]},
+            ),
             {"default": {"user": "testuser"}, "not_default": {"user": "testuser"}},
         )

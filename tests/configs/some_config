@@ -18,3 +18,17 @@ test3=12345
 test4=12345
 username=testuser
 user=testuser2
+
+[EU]
+username = blub
+password = blabla
+port = 443
+host1 = bla.eu.host.com
+host2 = bla2.eu.host.com
+
+[US]
+username = blub
+password = blabla
+port = 443
+host1 = bla.us.host.com
+host2 = bla2.us.host.com

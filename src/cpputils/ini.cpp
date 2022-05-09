@@ -104,14 +104,13 @@ namespace ini{
     inline void ParseDefinedKeys(SectionData t_SectionData, const ParserData& t_ParserData) {
 
 
-        std::string::const_iterator start_iter = t_SectionData.m_FileData.contents.begin();
-        std::string::const_iterator end_iter = t_SectionData.m_FileData.contents.begin();
-
         for (const auto& item : t_ParserData.m_ParserConfig.keys) {
 
             for (auto item_value : item.second) {
                 int type = 0; // default, 1=list, 2=dict
 
+                std::string::const_iterator start_iter = t_SectionData.m_FileData.contents.begin();
+                std::string::const_iterator end_iter = t_SectionData.m_FileData.contents.begin();
                 std::advance(start_iter, t_SectionData.section_cursor[0]);
                 std::advance(end_iter, t_SectionData.section_cursor[1]);
 
