@@ -202,7 +202,7 @@ namespace ini{
                                         string_operations::eval_type(value);
                             } break;
                             default: {
-                                if(std::string(start_iter, value_iter)!=item_value) continue;
+                                if(string_operations::trim(std::string(start_iter, value_iter))!=item_value) continue;
                                 t_SectionData.section_envir[py::cast(item.first)] = string_operations::eval_type(value);
                             } break;
                         }
