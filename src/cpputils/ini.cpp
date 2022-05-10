@@ -378,7 +378,7 @@ namespace ini{
 
             for(std::string item_value : item.second) {
                 item_value = system_operations::path_exanduser(item_value);
-                if(!system_operations::file_exists(item_value)){
+                if(!system_operations::file_exists(item_value) && !string_operations::is_nan(item_value)){
                     py::object logger = py::module::import("logging").attr("getLogger")("cpputils.ini_load");
                     logger.attr("warning")("skipping file '" + item_value + "', because not exists!");
                     continue;
