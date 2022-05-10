@@ -214,12 +214,33 @@ namespace ini{
         }
     }
 
+    inline int GetNextSectionIdx(FileData t_FileData, int idx){
+        idx = (int) t_FileData.contents.find_first_of(SECTION_OPEN_CHAR,
+                                                        idx) + 1;
+        while(idx &&
+              t_FileData.contents.at(idx-2) != system_operations::NEWLINE &&
+              t_FileData.contents.at(idx-2) != WHITESPACE){
+            idx =
+                    (int) t_FileData.contents.find_first_of(SECTION_OPEN_CHAR,
+                                                            idx) + 1;
+        }
+        if(!idx){
+            idx = (int) t_FileData.contents.size() - 1;
+        }
+        return idx;
+    }
+
     inline void ParseSectionsDefault(FileData t_FileData, const ParserData& t_ParserData,
-                                     py::dict section_envir, bool defaults_only = false) {
+                                     py::dict section_envir,
+                                     bool defaults_only = false,
+                                     bool first_section_only = false) {
         std::array<int, 2> section_cursor{};
         t_FileData.contents.insert(0, 1, system_operations::NEWLINE);
         section_cursor[0] = (int) defaults_only * (int) t_FileData.contents.size();
-        section_cursor[1] = (int) t_FileData.contents.size();
+        section_cursor[1] = GetNextSectionIdx(t_FileData,
+                                              first_section_only ?
+                                              GetNextSectionIdx(t_FileData, section_cursor[0]) :
+                                              (int) t_FileData.contents.size() - 1);
         // parse all keys in all sections for config without section
         t_ParserData.ParseKeys(
                 SectionData(
@@ -257,20 +278,9 @@ namespace ini{
             t_FileData.file_envir[py::cast(section_name)]  =
                     t_FileData.file_envir.attr("get")(py::cast(section_name), py::dict());
 
-            section_cursor[1] =
-                    (int) t_FileData.contents.find_first_of(SECTION_OPEN_CHAR,
-                                                            section_cursor[1]) + 1;
+            section_cursor[1] = GetNextSectionIdx(t_FileData, section_cursor[1]);
 
-            while(section_cursor[1] &&
-            t_FileData.contents.at(section_cursor[1]-2) != system_operations::NEWLINE &&
-            t_FileData.contents.at(section_cursor[1]-2) != WHITESPACE){
-                section_cursor[1] =
-                        (int) t_FileData.contents.find_first_of(SECTION_OPEN_CHAR,
-                                                                section_cursor[1]) + 1;
-            }
-
-            if (!section_cursor[1]){
-                section_cursor[1] = (int) t_FileData.contents.size() - 1;
+            if (section_cursor[1] == (int) t_FileData.contents.size() - 1){
                 t_ParserData.ParseKeys(
                         SectionData(
                                 t_FileData.file_envir[py::cast(section_name)], // Section Environment
@@ -303,6 +313,10 @@ namespace ini{
                 section_envir = t_FileData.file_envir[py::cast(item.first)];
             }
             if(item.second.empty()){
+                if(string_operations::is_nan(item.first)){
+                    ParseSectionsDefault(t_FileData, t_ParserData, section_envir, false, true);
+                    continue;
+                }
                 ParseSectionsDefault(t_FileData, t_ParserData, section_envir);
                 continue;
             }
