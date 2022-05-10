@@ -322,7 +322,6 @@ namespace ini{
             }
 
             for(const auto& item_value : item.second){
-
                 // config.begin_pattern is section name + pattern
                 std::array<int, 2> section_cursor = string_operations::idx_between(
                         t_FileData.contents.begin(), t_FileData.contents.end(),
@@ -331,11 +330,14 @@ namespace ini{
 
                 if (section_cursor == string_operations::empty_idx) {
                     // handling if section not found or has no section
-
-                    if(string_operations::is_nan(item_value)) {
-                        ParseSectionsDefault(t_FileData, t_ParserData, section_envir);
+                    if(!string_operations::is_nan(item_value)) {
+                        continue;
                     }
-
+                    if(string_operations::is_nan(item.first)){
+                        ParseSectionsDefault(t_FileData, t_ParserData, section_envir, false, true);
+                        continue;
+                    }
+                    ParseSectionsDefault(t_FileData, t_ParserData, section_envir);
                     continue;
                 }
 
@@ -350,6 +352,7 @@ namespace ini{
                                 t_FileData // Parent ini data
                         ), t_ParserData);
             }
+
             if(!py::len(section_envir)){
                 ParseSectionsDefault(t_FileData, t_ParserData, section_envir, true);
             }

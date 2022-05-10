@@ -32,7 +32,11 @@ namespace string_operations {
                         !compare_type<py::list, T_out>()) {
                     result[item.first.cast<std::string>()] = std::vector<T_out>();
                     for (auto item_value : item.second){
-                        if(!item_value.is_none() and py::isinstance<T_in>(item_value)){
+                        if(item_value.is_none()){
+                            result[item.first.cast<std::string>()].push_back(py::str("None").cast<T_out>());
+                            continue;
+                        }
+                        if(py::isinstance<T_in>(item_value)){
                             result[item.first.cast<std::string>()].push_back(item_value.cast<T_out>());
                         }
                     }
@@ -47,7 +51,7 @@ namespace string_operations {
         if(py::isinstance<py::list>(dictionary)){
             for (auto item : dictionary.cast<py::list>())
             {
-                if(!item.is_none() and py::isinstance<T_in>(item)){
+                if(py::isinstance<T_in>(item)){
                     auto key_val = item.cast<std::string>();
                     result[key_val] = {item.cast<T_out>()};
                 }
