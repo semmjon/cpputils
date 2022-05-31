@@ -4,6 +4,58 @@
 
 namespace string_operations {
 
+    py::object apply_match(const std::vector<std::string>& vec, std::string match){
+
+        py::list result;
+
+        for(auto value : vec){
+            std::string::const_iterator start_iter = value.begin();
+            std::string::const_iterator end_iter = value.end();
+            std::string::const_iterator value_iter = start_iter;
+
+            start_iter =
+                    std::search(start_iter, end_iter,
+                            // std::boyer_moore_horspool_searcher(
+                                match.begin(),
+                                match.end()
+                            //)
+                    );
+            result.append(py::cast(start_iter != end_iter));
+        }
+
+        return result;
+
+    }
+
+    py::object extract_between(const std::string& data, std::string start, char end){
+
+        py::list result;
+        const int start_size = (int) start.size();
+
+        std::string::const_iterator start_iter = data.begin();
+        std::string::const_iterator end_iter = data.end();
+        std::string::const_iterator value_iter = start_iter;
+
+        while(true) {
+            start_iter =
+                    std::search(start_iter, end_iter,
+                            // std::boyer_moore_horspool_searcher(
+                                start.begin(),
+                                start.end()
+                            //)
+                    );
+            if(start_iter == end_iter){
+                break;
+            }
+            start_iter += start_size;
+            value_iter = std::find(start_iter + 1, end_iter, end);
+            result.append(py::cast(std::string(start_iter, value_iter)));
+        }
+
+        return result;
+
+    }
+
     template<class T_0, class T_1>
     static bool compare_type() {
         return (typeid(T_0) == typeid(T_1));

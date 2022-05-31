@@ -1,5 +1,7 @@
 #include "bindings.h"
 
+#include <utility>
+
 PYBIND11_MODULE(_cpputils, module) {
 
     module.doc() = R"pbdoc(
@@ -14,6 +16,7 @@ PYBIND11_MODULE(_cpputils, module) {
             eval_type
             simple_hmac
             sha256
+            extract_between
     )pbdoc";
 
     module.def("ini_load", [](const py::object& files,
@@ -44,6 +47,21 @@ PYBIND11_MODULE(_cpputils, module) {
                    return string_operations::eval_datetime(value.cast<std::string>()); },
                py::arg("value").none(false),
                R"pbdoc(evaluate string into python datetime object)pbdoc");
+
+    module.def("extract_between", [](const py::bytes& data, const py::str& start, const py::str& end) -> py::object {
+                return string_operations::extract_between(data.cast<std::string>(), start.cast<std::string>(), end.cast<std::string>().at(0));
+    },
+               py::arg("data").none(false),
+               py::arg("start").none(false),
+               py::arg("end").none(false),
+               R"pbdoc(extracts values by start and end pattern)pbdoc");
+
+    module.def("apply_match", [](const py::list& vec, const py::str& start) -> py::object {
+                   return string_operations::apply_match(vec.cast<std::vector<std::string> >(), start.cast<std::string>());
+               },
+               py::arg("vec").none(false),
+               py::arg("start").none(false),
+               R"pbdoc(extracts values by start and end pattern)pbdoc");
 
     module.def("simple_hmac", [](const std::vector<std::string>& data, const std::string &algo) -> py::object {
                    return py::cast(digest::simple_hmac({data.begin() + 1, data.end()}, data.at(0), algo)); },

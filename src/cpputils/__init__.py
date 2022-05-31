@@ -1,6 +1,8 @@
 from cpputils._cpputils import (
+    apply_match,
     eval_datetime,
     eval_type,
+    extract_between,
     ini_load,
     simple_hmac,
     simple_sha256,
@@ -16,4 +18,6 @@ __all__ = [
     "ini_load",
     "simple_hmac",
     "simple_sha256",
+    "extract_between",
+    "apply_match",
 ]

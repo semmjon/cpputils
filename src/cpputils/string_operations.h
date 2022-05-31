@@ -4,12 +4,9 @@
 #include <algorithm>
 #include <regex>
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 namespace py = pybind11;
-
-namespace dt_utils{
-    py::object eval_datetime(std::string value);
-}
 
 namespace string_operations {
 
@@ -46,6 +43,9 @@ namespace string_operations {
             int skip);
     std::string trim(const std::string& str,
                      const std::string& whitespace = " \t");
+
+    py::object extract_between(const std::string& data, std::string start, char end);
+    py::object apply_match(const std::vector<std::string>& vec, std::string match);
 }
 
 #endif //CPPUTILS_STRING_OPERATIONS_H
