@@ -23,6 +23,9 @@ variables:
     - python3.8 -m pip install --upgrade pip
     - python3.8 -m pip install virtualenv
     - python3.8 -m venv ./venv38
+    - python3.9 -m pip install --upgrade pip
+    - python3.9 -m pip install virtualenv
+    - python3.9 -m venv ./venv39
     - python3.10 -m pip install --upgrade pip
     - python3.10 -m pip install virtualenv
     - python3.10 -m venv ./venv310
@@ -46,6 +49,7 @@ build_windows:
     - python3 --version  # For debugging
     - python3.10 --version
     - python3.8 --version
+    - python3.9 --version
 
 build_manylinux1_x86_64:
   <<: *build_before_script
@@ -54,6 +58,8 @@ build_manylinux1_x86_64:
   stage: build
   script:
     - source venv38/bin/activate
+    - python -m build
+    - source venv39/bin/activate
     - python -m build
     - source venv310/bin/activate
     - python -m build
@@ -69,6 +75,9 @@ test_manylinux1_x86_64:
   script:
     - source venv38/bin/activate
     - pip install $(ls dist/*38*.whl)
+    - python -m pytest
+    - source venv39/bin/activate
+    - pip install $(ls dist/*39*.whl)
     - python -m pytest
     - source venv310/bin/activate
     - pip install $(ls dist/*310*.whl)
@@ -87,8 +96,10 @@ publish_manylinux1_x86_64:
   script:
     - source venv310/bin/activate
     - python -m auditwheel repair $(ls dist/*38*.whl)
+    - python -m auditwheel repair $(ls dist/*39*.whl)
     - python -m auditwheel repair $(ls dist/*310*.whl)
     - python -m twine upload -r pypi $(ls wheelhouse/*38*.whl) --verbose
+    - python -m twine upload -r pypi $(ls wheelhouse/*39*.whl) --verbose
     - python -m twine upload -r pypi $(ls wheelhouse/*310*.whl) --verbose
   needs:
     - job: build_manylinux1_x86_64
