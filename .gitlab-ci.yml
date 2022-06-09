@@ -33,6 +33,9 @@ variables:
     - source venv38/bin/activate
     - python -m pip install build
     - python -m pip install pytest
+    - source venv39/bin/activate
+    - python -m pip install build
+    - python -m pip install pytest
     - source venv310/bin/activate
     - python -m pip install build
     - python -m pip install pytest
